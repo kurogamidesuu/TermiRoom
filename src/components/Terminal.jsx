@@ -43,12 +43,12 @@ const Terminal = () => {
   
   return (
     <>
-      <div className="block w-full min-h-screen h-auto bg-black text-lime-600 font-mono font-thin">
+      <div className="block w-full min-h-screen h-auto bg-black text-lime-600 font-[Hack] font-thin">
         <Header />
         <div className="pl-2">
           <div className="pl-1" >
             {history.map((cmd, index) => {
-              return (<pre key={index}>{`> ${cmd}`}</pre>)
+              return (<pre className="font-[Hack] whitespace-pre-wrap break-words" key={index}>{`> ${cmd}`}</pre>)
             })}
           </div>
           <div className="flex w-full pl-1" ref={bottomRef}>

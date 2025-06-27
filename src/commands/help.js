@@ -6,9 +6,9 @@ export default {
 
 function handleHelp(line, commandTree, indent='  ') {
   for (const [cmd, value] of Object.entries(commandTree)) {
-    line += `${indent}${cmd}:\t\t${value.description || ''}\n`;
+    line += `${indent}-${cmd}:\t\t${value.description || ''}\n`;
     if(value.subcommands) {
-      line = handleHelp(line, value.subcommands, indent+'  ');
+      line = handleHelp(line, value.subcommands, indent+'\t');
     }
   }
   return line;

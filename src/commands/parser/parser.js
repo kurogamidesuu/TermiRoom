@@ -23,6 +23,8 @@ export async function executeCommand(input) {
   const rawTokens = input.split(/'([^']*)'|\s+/).filter(Boolean);
   const {args, flags, cleanTokens} = parseArgsAndFlags(rawTokens);
 
+  if(!commandTree[cleanTokens[0]]) return `Invalid Command: ${cleanTokens[0]} doesn't exist.`;
+
   let node =  null;
   let currentTree = commandTree;
   let index = 0;
