@@ -10,8 +10,8 @@ const Terminal = () => {
   const bottomRef = useRef(null);
   const inputRef = useRef(null);
 
-  const handleSubmit = () => {
-    const parsedCmd = executeCommand(input);
+  const handleSubmit = async () => {
+    const parsedCmd = await executeCommand(input);
 
     if(parsedCmd === '__CLEAR__') {
       setHistory([]);

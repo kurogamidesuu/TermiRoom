@@ -1,6 +1,7 @@
 import help from '../help'
 import time from '../time'
 import todo from '../todo'
+import weather from '../weather'
 
 export default {
   help,
@@ -10,4 +11,5 @@ export default {
   },
   time,
   todo,
+  weather,
 }
