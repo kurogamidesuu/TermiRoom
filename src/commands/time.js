@@ -4,7 +4,7 @@ export default {
   subcommands: {
     utc: {
       description: 'Show current UTC time',
-      execute: () => new Date().toUTCString(),
+      execute: () => new Date().toUTCString().slice(17),
     },
     hours: {
       description: 'Show the current hour',

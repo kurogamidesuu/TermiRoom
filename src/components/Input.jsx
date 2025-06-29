@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 
-const Input = ({input, setInput, handleSubmit, inputRef}) => {
+const Input = ({input, setInput, handleSubmit}) => {
+
+  const inputRef = useRef(null);
 
   useEffect(() => {
     const handleClick = () => {

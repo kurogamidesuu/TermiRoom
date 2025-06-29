@@ -20,6 +20,7 @@ function parseArgsAndFlags(tokens) {
 }
 
 export async function executeCommand(input) {
+  if(!input) return;
   const rawTokens = input.split(/'([^']*)'|\s+/).filter(Boolean);
   const {args, flags, cleanTokens} = parseArgsAndFlags(rawTokens);
 

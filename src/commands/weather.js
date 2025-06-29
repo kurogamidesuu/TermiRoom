@@ -18,8 +18,7 @@ export default {
 
       return `Weather in ${location}:
     Temperature: ${weatherData.current.temperature_2m}°C
-    Wind Speed: ${weatherData.current.wind_speed_10m} km/h
-    Condition: ${handleCode(weatherData.current.weather_code)}`
+    Weather: ${handleCode(weatherData.current.weather_code)}`
     } catch(error) {
       return `Error occurred: ${error.message}`;
     }

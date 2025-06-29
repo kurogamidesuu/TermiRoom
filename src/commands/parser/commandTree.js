@@ -1,3 +1,4 @@
+import ai from '../ai'
 import define from '../define'
 import help from '../help'
 import time from '../time'
@@ -14,4 +15,5 @@ export default {
   todo,
   weather,
   define,
+  ai,
 }

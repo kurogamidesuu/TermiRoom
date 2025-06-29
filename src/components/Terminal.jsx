@@ -1,17 +1,17 @@
 import { useEffect, useRef, useState } from "react"
 import Header from "./Header";
 import Input from "./Input";
-import { executeCommand } from "../commands/parser/parser";
+import { executeCommand } from "../commands/parser/parser"; 
 
 const Terminal = () => {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState([]);
 
   const bottomRef = useRef(null);
-  const inputRef = useRef(null);
 
   const handleSubmit = async () => {
     const parsedCmd = await executeCommand(input);
+    if(!parsedCmd) return;
 
     if(parsedCmd === '__CLEAR__') {
       setHistory([]);
@@ -19,26 +19,12 @@ const Terminal = () => {
       return;
     }
 
-    setHistory(currState => [...currState, input, parsedCmd]);
+    setHistory(currState => [...currState, `> ${input}`, parsedCmd]);
     setInput('');
   }
   
   useEffect(() => {
     bottomRef.current?.scrollIntoView();
-
-    const handleUpKey = (e) => {
-      if (e.key === 'ArrowUp') {
-        const prevCommand = history[history.length - 2];
-        if(prevCommand) {
-          setInput(prevCommand);
-        }
-      }
-    }
-
-    window.addEventListener('keydown', (e) => handleUpKey(e));
-
-    return window.removeEventListener('keydown', (e) => handleUpKey(e));
-
   }, [history]);
   
   return (
@@ -48,14 +34,17 @@ const Terminal = () => {
         <div className="pl-2">
           <div className="pl-1" >
             {history.map((cmd, index) => {
-              return (<pre className="font-[Hack] whitespace-pre-wrap break-words" key={index}>{`> ${cmd}`}</pre>)
+              return (<pre className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1" key={index}>
+                <code>
+                  {cmd}
+                </code>
+              </pre>)
             })}
           </div>
           <div className="flex w-full pl-1" ref={bottomRef}>
-            <span className="mr-2">{'>'}</span>
+            <span className="mr-1">{'> '}</span>
             <Input 
               input={input}
-              inputRef={inputRef}
               setInput={setInput}
               handleSubmit={handleSubmit} />
           </div>
