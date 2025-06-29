@@ -1,6 +1,6 @@
 
 export default {
-  description: 'ask AI',
+  description: 'ask AI anything',
   args: {
     min: 0,
     max: 1,
@@ -22,7 +22,7 @@ export default {
               "role": "user",
               "content": content,
             }
-          ]
+          ],
         })
       });
 

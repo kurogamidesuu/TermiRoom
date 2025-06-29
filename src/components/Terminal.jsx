@@ -35,9 +35,7 @@ const Terminal = () => {
           <div className="pl-1" >
             {history.map((cmd, index) => {
               return (<pre className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1" key={index}>
-                <code>
-                  {cmd}
-                </code>
+                {cmd}
               </pre>)
             })}
           </div>
