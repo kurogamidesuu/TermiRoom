@@ -1,5 +1,8 @@
 export default {
-  description: 'Search up the meaning of a word',
+  description: {
+    format: '[word]',
+    desc: 'Search up the meaning of a word'
+  },
   args: {
     min: 0,
     max: 0,

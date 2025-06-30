@@ -24,23 +24,23 @@ const Terminal = () => {
   }
   
   useEffect(() => {
-    bottomRef.current?.scrollIntoView();
+    bottomRef.current?.scrollIntoView({behavior: 'smooth'});
   }, [history]);
   
   return (
     <>
-      <div className="block w-full min-h-screen h-auto bg-black text-lime-600 font-[Hack] font-thin">
+      <div className="block w-full min-h-screen h-auto bg-black text-lime-600 font-[Hack] text-sm">
         <Header />
         <div className="pl-2">
           <div className="pl-1" >
-            {history.map((cmd, index) => {
-              return (<pre className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1" key={index}>
+            {history.map((cmd, index) => (
+              <pre className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1" key={index}>
                 {cmd}
-              </pre>)
-            })}
+              </pre>
+              ))}
           </div>
           <div className="flex w-full pl-1" ref={bottomRef}>
-            <span className="mr-1">{'> '}</span>
+            <span className="mr-1.5">{'> '}</span>
             <Input 
               input={input}
               setInput={setInput}
