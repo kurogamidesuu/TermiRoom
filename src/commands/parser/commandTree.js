@@ -8,7 +8,10 @@ import weather from '../weather'
 export default {
   help,
   clear: {
-    description: 'Clear the console',
+    description: {
+      format: '',
+      desc: 'Clear the console'
+    },
     execute: () => '__CLEAR__',
   },
   time,

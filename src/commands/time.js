@@ -1,13 +1,29 @@
 export default {
-  description: 'Shows the current time.',
+  description: {
+    format: '',
+    desc: 'Shows the current time.',
+  },
   execute: () => new Date().toTimeString(),
   subcommands: {
     utc: {
-      description: 'Show current UTC time',
+      description: {
+        format: '',
+        desc: 'Show current UTC time'
+      },
       execute: () => new Date().toUTCString().slice(17),
     },
     hours: {
-      description: 'Show the current hour',
+      args: {
+        min: 0,
+        max: 1,
+        description:{
+          '-standard': 'Show the current hour in the standard 12-hour format.',
+        }
+      },
+      description: {
+        format: '',
+        desc: 'Show the current hour'
+      },
       execute: ({args}) => {
         if(args.standard) {
           return Math.abs(new Date().getHours() - 12);
@@ -16,27 +32,42 @@ export default {
       },
       subcommands: {
         utc: {
-          description: 'Show current UTC hour',
+          description: {
+            format: '',
+            desc: 'Show current UTC hour'
+          },
           execute: () => new Date().getUTCHours(),
         }
       }
     },
     minutes: {
-      description: 'Show the current minutes',
+      description: {
+        format: '',
+        desc: 'Show the current minutes'
+      },
       execute: () => new Date().getMinutes(),
       subcommands: {
         utc: {
-          description: 'Show current UTC minutes',
+          description: {
+            format: '',
+            desc: 'Show current UTC minutes'
+          },
           execute: () => new Date().getUTCMinutes(),
         }
       }
     },
     seconds: {
-      description: 'Show the current seconds',
+      description: {
+        format: '',
+        desc: 'Show the current seconds'
+      },
       execute: () => new Date().getSeconds(),
       subcommands: {
         utc: {
-          description: 'Show current UTC seconds',
+          description: {
+            format: '',
+            desc: 'Show current UTC seconds'
+          },
           execute: () => new Date().getUTCSeconds(),
         }
       }

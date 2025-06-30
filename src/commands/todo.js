@@ -1,8 +1,22 @@
 
 export default {
+  description: {
+    format: '',
+    desc: ''
+  },
   subcommands: {
     add: {
-      description: 'Add a task to your Todo list.',
+      description: {
+        format: '[task]',
+        desc: 'Add a task to your Todo list.'
+      },
+      args: {
+        min: 0,
+        max: 1,
+        description: {
+          '--due=[date]': 'set due date as specified date',
+        }
+      },
       execute: ({flags, content}) => {
         let todoList = JSON.parse(localStorage.getItem('todoList')) || [];
 
@@ -31,13 +45,13 @@ export default {
         localStorage.setItem('todoList', JSON.stringify(todoList));
         return `Added task: '${task}'`;
       },
-      args: {
-        min: 0,
-        max: 1,
-      }
+      
     },
     list: {
-      description: 'Show your Todo list',
+      description: {
+        format: '',
+        desc: 'Show your Todo list'
+      },
       execute: () => {
         const todoList = JSON.parse(localStorage.getItem('todoList')) || [];
         let output = todoList.length ? 'My Todos:\n\tID  Task                   Due Date\n\t------------------------------------------\n' : 'Your Todo List is empty!';
@@ -49,14 +63,20 @@ export default {
       }
     },
     clear: {
-      description: 'Clear all todos',
+      description: {
+        format: '',
+        desc: 'Clear all todos'
+      },
       execute: () => {
         localStorage.removeItem('todoList');
         return 'Todo list cleared successfully.';
       }
     },
     done: {
-      description: 'Mark a task as complete.',
+      description: {
+        format: '-[task no.]',
+        desc: 'Mark a task as complete.'
+      },
       args: {
         min: 1,
         max: 1,

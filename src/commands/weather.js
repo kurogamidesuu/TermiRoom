@@ -1,5 +1,8 @@
 export default {
-  description: 'Check weather of a city',
+  description: {
+    format: '[city]',
+    desc: 'Check weather of a city'
+  },
   args: {
     min: 0,
     max: 1,
