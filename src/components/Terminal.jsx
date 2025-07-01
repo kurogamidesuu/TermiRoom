@@ -5,7 +5,7 @@ import { executeCommand } from "../commands/parser/parser";
 
 const Terminal = () => {
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState([]);
+  const [history, setHistory] = useState(['Welcome to termiRoom\nWrite `help` to check the available commands\n']);
 
   const bottomRef = useRef(null);
 

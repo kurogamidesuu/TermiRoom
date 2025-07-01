@@ -12,13 +12,12 @@ const keywords = [];
 function handleHelp(line, commandTree, indent='  ') {
   for (const [cmd, value] of Object.entries(commandTree)) {
     keywords.push(cmd);
-    line += `${indent}${(cmd+' '+value.description?.format).padEnd(25)}${value.description?.desc || ''}\n`;
+    line += `${indent}${(cmd+' '+value.description?.format).padEnd(40)}${value.description?.desc || ''}\n`;
     if(value.args?.description) {
       for(const [arg, desc] of Object.entries(value.args.description)) {
-        line += `${indent}${cmd} ${arg.padEnd(25)}${desc}\n`
+        line += `${indent}${cmd} ${value.description?.format} ${arg.padEnd(40)}${desc}\n`
       }
     }
-    console.log(value)
     if(value.subcommands) {
       line = handleHelp(line, value.subcommands, indent+'\t');
     }
