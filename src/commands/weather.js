@@ -7,7 +7,7 @@ export default {
     min: 0,
     max: 1,
     description: {
-      'detailed': 'Get a detailed description of weather in a city',
+      '- detailed': 'Get a detailed description of weather in a city',
     }
   },
   execute: async ({args, content}) => {
@@ -22,8 +22,6 @@ export default {
       const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
       const weatherData = await weatherRes.json();
 
-      console.log(weatherData);
-
       if(args.detailed) {
         return `Weather in ${location}:
     Time: ${weatherData.current.time} 
@@ -37,20 +35,21 @@ export default {
     Temperature: ${weatherData.current.temperature_2m}°C
     Weather: ${handleCode(weatherData.current.weather_code)}`
     } catch(error) {
-      return `Error occurred: ${error.message}`;
+      console.log(error.message);
+      return `Error occurred: Try again!`;
     }
   },
   subcommands: {
     here: {
       description: {
-        format: '[here]',
+        format: '',
         desc: 'Shows the weather of your current location.',
       },
       args: {
         min: 0,
-        max: 0,
+        max: 1,
       },
-      execute: async () => {
+      execute: async ({args}) => {
         try {
           const location = await getLocation();
           const lat = location.coords.latitude;
@@ -64,7 +63,20 @@ export default {
           const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
         const weatherData = await weatherRes.json();
 
-        console.log(weatherData);
+
+        if(args.length) {
+          if(!args.detailed) return `Invalid argument provided.`
+        }
+
+        if(args.detailed) {
+          return `Weather in ${place}:
+      Time: ${weatherData.current.time} 
+      Timezone: ${weatherData.timezone} ${weatherData.timezone_abbreviation}
+      Temperature: ${weatherData.current.temperature_2m}°C
+      Wind Speed: ${weatherData.current.wind_speed_10m} km/h
+      Weather: ${handleCode(weatherData.current.weather_code)}
+      `;
+        }
 
         return `Weather in ${place}:
       Temperature: ${weatherData.current.temperature_2m}°C
