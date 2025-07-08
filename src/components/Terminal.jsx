@@ -6,7 +6,7 @@ import { getUsername, onUsernameChange } from "../usernameStore";
 
 const Terminal = () => {
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState(['Welcome to termiRoom\nWrite `help` to check the available commands\n']);
+  const [history, setHistory] = useState([{type: 'output', text: 'Welcome to termiRoom\nWrite `help` to check the available commands\nVisit the Github repo for more information: [https://github.com/kurogamidesuu/TermiRoom.git]'}]);
   const [username, setUsername] = useState('');
   
   const bottomRef = useRef(null);

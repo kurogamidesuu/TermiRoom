@@ -20,15 +20,15 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(62.7% 0.194 149.214);
+  background: oklch(35.9% 0.144 278.697);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(44.8% 0.119 151.328);
+  background: oklch(25.7% 0.09 281.288);
 }
 
 ::-webkit-scrollbar-button {
-  background: oklch(26.6% 0.065 152.934);
+  background: oklch(25.7% 0.09 281.288);
   height: 10px;
 }
