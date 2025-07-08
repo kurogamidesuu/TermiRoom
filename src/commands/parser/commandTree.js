@@ -4,6 +4,7 @@ import help from '../help'
 import time from '../time'
 import todo from '../todo'
 import weather from '../weather'
+import whoami from '../whoami'
 
 export default {
   help,
@@ -19,4 +20,5 @@ export default {
   weather,
   define,
   ai,
+  whoami,
 }
