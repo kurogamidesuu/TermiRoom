@@ -73,7 +73,7 @@ export default {
       },
       execute: async ({flags, content}) => {
         if(!content) return `No prompt found.`;
-        if(!flags.language) return `Enter a valid language argument.`
+        if(!flags.lang) return `Enter a valid language argument.`
         try {
           const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: "POST",
@@ -86,12 +86,12 @@ export default {
               "messages": [
                 {
                   "role": "user",
-                  "content": `You are responding to a terminal-style command: ai code --language=${flags.language} ${content}.
-                    The user has requested a code snippet or solution related to: "${content}", written in ${flags.language}.
+                  "content": `You are responding to a terminal-style command: ai code --language=${flags.lang} ${content}.
+                    The user has requested a code snippet or solution related to: "${content}", written in ${flags.lang}.
 
                     If the request is unclear or the prompt doesn't make sense for coding, politely ask the user to enter a valid coding-related prompt.
 
-                    Otherwise, respond with a concise, accurate, and well-formatted code snippet in ${flags.language}.
+                    Otherwise, respond with a concise, accurate, and well-formatted code snippet in ${flags.lang}.
 
                     Include brief inline comments or a short explanation only if necessary to clarify the logic.
 

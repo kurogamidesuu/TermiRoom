@@ -11,7 +11,7 @@ export default {
     }
   },
   execute: async ({args, content}) => {
-    if(!content.length) return `Please enter a location to check weather`;
+    if(!content.length) return `Please enter a location or allow location access with "weather here"`;
 
     try {
       const geocodeRes = await fetch(`https://geocode.maps.co/search?q=${content}&api_key=685e45f632329287339657ctza3e53d`);
@@ -39,7 +39,51 @@ export default {
     } catch(error) {
       return `Error occurred: ${error.message}`;
     }
+  },
+  subcommands: {
+    here: {
+      description: {
+        format: '[here]',
+        desc: 'Shows the weather of your current location.',
+      },
+      args: {
+        min: 0,
+        max: 0,
+      },
+      execute: async () => {
+        try {
+          const location = await getLocation();
+          const lat = location.coords.latitude;
+          const lon = location.coords.longitude;
+
+          const res = await fetch(`https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}&api_key=685e45f632329287339657ctza3e53d`);
+          const data = await res.json();
+
+          const place = data.display_name;
+
+          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
+        const weatherData = await weatherRes.json();
+
+        console.log(weatherData);
+
+        return `Weather in ${place}:
+      Temperature: ${weatherData.current.temperature_2m}°C
+      Weather: ${handleCode(weatherData.current.weather_code)}`
+        } catch(error) {
+          return `Error occurred: ${error.message}`
+        }
+      }
+    }
   }
+}
+
+const getLocation = () => {
+  return new Promise((resolve, reject) => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve(position),
+      (error) => reject(error)
+    )
+  })
 }
 
 function handleCode(code) {
