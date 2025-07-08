@@ -5,5 +5,30 @@ body {
     #101020,
     #101010
   );
-  
+
+}
+
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(
+    #101020,
+    #101010
+  );
+}
+
+::-webkit-scrollbar-thumb {
+  background: oklch(62.7% 0.194 149.214);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: oklch(44.8% 0.119 151.328);
+}
+
+::-webkit-scrollbar-button {
+  background: oklch(26.6% 0.065 152.934);
+  height: 10px;
 }
