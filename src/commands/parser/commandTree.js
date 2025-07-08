@@ -1,4 +1,5 @@
 import ai from '../ai'
+import termiGod from '../termiGod'
 import define from '../define'
 import help from '../help'
 import time from '../time'
@@ -21,4 +22,5 @@ export default {
   define,
   ai,
   whoami,
+  termiGod,
 }
