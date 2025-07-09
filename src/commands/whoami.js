@@ -1,4 +1,4 @@
-import { getUsername, setUsername } from "../usernameStore";
+import { getUsername, setUsername } from "../utils/usernameStore";
 
 export default {
   description: {

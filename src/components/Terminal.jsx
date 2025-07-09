@@ -2,11 +2,12 @@ import { useEffect, useRef, useState } from "react"
 import Header from "./Header";
 import Input from "./Input";
 import { executeCommand } from "../commands/parser/parser"; 
-import { getUsername, onUsernameChange } from "../usernameStore";
+import { getUsername, onUsernameChange } from "../utils/usernameStore";
+import { getLocalHistory, setLocalHistory } from "../utils/historyStore";
 
 const Terminal = () => {
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState([{type: 'output', text: 'Welcome to termiRoom\nWrite `help` to check the available commands\nVisit the Github repo for more information: [https://github.com/kurogamidesuu/TermiRoom.git]'}]);
+  const [history, setHistory] = useState(getLocalHistory());
   const [username, setUsername] = useState('');
   
   const bottomRef = useRef(null);
@@ -17,6 +18,7 @@ const Terminal = () => {
 
     if(parsedCmd === '__CLEAR__') {
       setHistory([]);
+      setLocalHistory([]);
       setInput('');
       return;
     }
@@ -38,6 +40,8 @@ const Terminal = () => {
   
   useEffect(() => {
     bottomRef.current?.scrollIntoView({behavior: 'smooth'});
+    
+    setLocalHistory(history);
   }, [history]);
 
   useEffect(() => {
