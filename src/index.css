@@ -1,13 +1,5 @@
 @import "tailwindcss";
 
-body {
-  background-image: linear-gradient(
-    #101020,
-    #101010
-  );
-
-}
-
 ::-webkit-scrollbar {
   width: 5px;
 }

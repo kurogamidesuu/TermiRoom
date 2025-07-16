@@ -4,11 +4,14 @@ import Input from "./Input";
 import { executeCommand } from "../commands/parser/parser"; 
 import { getUsername, onUsernameChange } from "../utils/usernameStore";
 import { getLocalHistory, setLocalHistory } from "../utils/historyStore";
+import Sidenav from "./Sidenav";
+import { getLocalTheme } from "../utils/themeStore";
 
 const Terminal = () => {
   const [input, setInput] = useState('');
   const [history, setHistory] = useState(getLocalHistory());
   const [username, setUsername] = useState('');
+  const [showSidenav, setShowSidenav] = useState(false);
   
   const bottomRef = useRef(null);
 
@@ -58,15 +61,18 @@ const Terminal = () => {
   
   return (
     <>
-      <div className="block w-full min-h-screen h-auto text-green-600 font-[Hack] text-sm">
-        <Header />
-        <div className="pl-2">
+      <div className={`block w-full min-h-screen h-auto ${getLocalTheme().text} bg-linear-to-b ${getLocalTheme().bg} font-mono font-[Hack] text-sm overflow-hidden`}>
+        <Header showSidenav={showSidenav} setShowSidenav={setShowSidenav} />
+        <div className={`w-100 h-full fixed right-0 transition all duration-400 z-0  ${showSidenav ? 'opacity-100' : 'translate-x-full'}`}>
+          <Sidenav setShowSidenav={setShowSidenav} />
+        </div>
+        <div className="pl-2 pt-18">
           <div className="pl-1" >
             {history.map((entry, index) => {
               if(entry.type === 'input') {
                 return (
                   <pre className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1" key={index}>
-                    <span className="text-yellow-500">{`${entry.user}@termiRoom:~$ `}</span>
+                    <span className={getLocalTheme().username}>{`${entry.user}@termiRoom:~$ `}</span>
                     <span>{entry.command}</span>
                   </pre>
                 )
@@ -79,8 +85,8 @@ const Terminal = () => {
               }
             })}
           </div>
-          <div className="flex w-full pl-1" ref={bottomRef}>
-            <span className="mr-1.5 text-yellow-500">{`${username}@termiRoom:~$ `}</span>
+          <div className="flex w-full pl-1 font-[Hack]" ref={bottomRef}>
+            <span className={`mr-1.5 ${getLocalTheme().username}`}>{`${username}@termiRoom:~$ `}</span>
             <Input 
               input={input}
               setInput={setInput}
