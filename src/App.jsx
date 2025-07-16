@@ -1,8 +1,11 @@
 import Terminal from "./components/Terminal";
+import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <Terminal />
+    <ThemeProvider >
+      <Terminal />
+    </ThemeProvider>
   );
 }
 

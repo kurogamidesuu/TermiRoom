@@ -1,5 +1,5 @@
-let theme = null;
-let index = null;
+import { createContext, useContext, useEffect, useState } from "react";
+
 
 const themes = [
    {
@@ -91,23 +91,34 @@ const themes = [
     },
   },
 
-]
+];
 
-export const getLocalTheme = () => {
-  if(!theme && !index) {
-    const storedTheme = localStorage.getItem('theme');
-    const storedIndex = localStorage.getItem('themeIndex');
-    index = storedIndex ? JSON.parse(storedIndex) : 0;
-    theme = storedTheme ? JSON.parse(storedTheme) : themes[index];
-    localStorage.setItem('themeIndex', JSON.stringify(index));
-    localStorage.setItem('theme', JSON.stringify(theme));
+const ThemeContext = createContext();
+
+export const ThemeProvider = ({children}) => {
+  const [themeIndex, setThemeIndex] = useState(0);
+  const [theme, setTheme] = useState(themes[0]);
+
+  useEffect(() => {
+    const storedIndex = JSON.parse(localStorage.getItem('themeIndex'));
+    if(storedIndex !== null) {
+      setThemeIndex(storedIndex);
+      setTheme(themes[storedIndex]);
+    }
+  }, []);
+
+  const cycleTheme = () => {
+    const newIndex = (themeIndex + 1) % themes.length;
+    setThemeIndex(newIndex);
+    setTheme(themes[newIndex]);
+    localStorage.setItem('themeIndex', JSON.stringify(newIndex));
   }
-  return theme;
+
+  return (
+    <ThemeContext.Provider value={{theme, cycleTheme}} >
+      {children}
+    </ThemeContext.Provider>
+  )
 }
 
-export const setLocalTheme = () => {
-  index = (index + 1) % themes.length;
-  theme = themes[index];
-  localStorage.setItem('themeIndex', JSON.stringify(index));
-  localStorage.setItem('theme', JSON.stringify(theme));
-}
+export const useTheme = () => useContext(ThemeContext);
