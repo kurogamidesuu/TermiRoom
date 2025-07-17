@@ -13,7 +13,7 @@ export default {
     set: {
       description: {
         format: '',
-        desc: 'set your name on console',
+        desc: 'Set your name on console',
       },
       execute: ({content}) => {
         if(!content) return `Error: Please enter a name`;
