@@ -73,17 +73,25 @@ const Terminal = () => {
   
   return (
     <>
-      <div className={`block w-full min-h-screen h-auto ${theme.text} bg-linear-to-b ${theme.bg} font-mono font-[Hack] text-sm overflow-hidden`}>
-        <Header showSidenav={showSidenav} setShowSidenav={setShowSidenav} theme={theme} />
-        <div className={`w-100 h-full fixed right-0 transition all duration-400 z-0  ${showSidenav ? 'opacity-100' : 'translate-x-full'}`}>
-          <Sidenav setShowSidenav={setShowSidenav} theme={theme} cycleTheme={cycleTheme} />
+      <div style={{overflowAnchor: 'none'}} className={`flex flex-col w-full min-h-screen ${theme.text} bg-linear-to-b ${theme.bg} font-mono font-[Hack] text-sm sm:text-xs md:text-sm lg:text-sm`}>
+        <Header
+          showSidenav={showSidenav} 
+          setShowSidenav={setShowSidenav} 
+          theme={theme} 
+        />
+        <div className={`w-100 h-full fixed right-0 transition-transform duration-400 ease-in-out z-0  ${showSidenav ? 'opacity-100' : 'translate-x-full'}`}>
+          <Sidenav 
+            setShowSidenav={setShowSidenav}
+            theme={theme}
+            cycleTheme={cycleTheme}
+          />
         </div>
         {showThemeName && (
           <div className={`fixed w-full h-screen flex items-end justify-center`}>
             <div className={`mb-5 p-3 rounded-lg text-xl ${theme.text} bg-zinc-900/20`}>Theme: {theme.name}</div>
           </div>
           )}
-        <div className="pl-2 pt-18">
+        <div className="pl-2 pt-18" >
           <div className="pl-1" >
             {history.map((entry, index) => {
               if(entry.type === 'input') {
@@ -102,13 +110,15 @@ const Terminal = () => {
               }
             })}
           </div>
-          <div className="flex w-full pl-1 font-[Hack]" ref={bottomRef}>
+          <div className="flex w-full pl-1 font-[Hack]">
             <span className={`mr-1.5 ${theme.username}`}>{`${username}@termiRoom:~$ `}</span>
             <Input 
               input={input}
               setInput={setInput}
-              handleSubmit={handleSubmit} />
+              handleSubmit={handleSubmit} 
+            />
           </div>
+          <div ref={bottomRef} />
         </div>
       </div>  
     </>

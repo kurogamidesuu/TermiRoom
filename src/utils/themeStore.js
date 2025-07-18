@@ -70,7 +70,7 @@ export const themes = [
     bg: 'from-[#282a36] to-[#1e1f29]',
     header: 'to-[#44475a]',
     text: 'text-[#f8f8f2]',
-    username: 'text-[#ff79c6]',
+    username: 'text-[#ff1944]',
     navBtn: {
       bg: 'from-[#6272a4] to-[#44475a]',
       btn: 'bg-[#bd93f9]',

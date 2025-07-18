@@ -2,9 +2,6 @@
 
 > A retro-style web terminal emulator packed with powerful commands like AI explain/code, weather, todos, dictionary, and more — built using React + TailwindCSS.
 
-![termiRoom Screenshot 1](./src/assets/screenshot-1.png)
-![termiRoom Screenshot 2](./src/assets/screenshot-2.png)
-
 ---
 
 ## ✨ Features
