@@ -6,7 +6,7 @@ const Input = ({input, setInput, handleSubmit}) => {
 
   useEffect(() => {
     const handleClick = () => {
-      inputRef.current?.focus();
+      inputRef.current?.focus({ preventScroll: true });
     }
 
     window.addEventListener('click', handleClick);

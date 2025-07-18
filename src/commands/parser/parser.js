@@ -58,6 +58,6 @@ export async function executeCommand(input) {
       return `Error executing command: ${e.message}`;
     }
   } else {
-    return `Command found, but no execute() defined.`;
+    return `Incomplete command '${cleanTokens[0]}'`;
   }
 }
