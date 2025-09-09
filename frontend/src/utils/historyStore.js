@@ -15,17 +15,34 @@ const initial_message = {
   text: `${text}\nWelcome to termiRoom!\nWrite 'help' to check the available commands\nVisit the Github repo for more information: https://github.com/kurogamidesuu/TermiRoom.git`
 }
 
-export const getLocalHistory = () => {
+export const getServerHistory = async () => {
   if(!history) {
-    const stored = localStorage.getItem('cmdHistory');
-    history = stored ? JSON.parse(stored) : [initial_message];
-    localStorage.setItem('cmdHistory', JSON.stringify(history));
+    try {
+      const res = await fetch('/api/user/history', {
+        credentials: 'include'
+      });
+      if(res.ok) {
+        const data = await res.json();
+        history = (data.history && data.history.length > 0) ? data.history : [initial_message];
+      } else {
+        history = [initial_message];
+      }
+    } catch {
+      history = [initial_message];
+    }
   }
   return history;
 }
 
-export const setLocalHistory = (newHistory) => {
+export const setServerHistory = async (newHistory) => {
   history = newHistory;
-  localStorage.setItem('cmdHistory', JSON.stringify(history));
   listeners.forEach((cb) => cb(newHistory));
-}
+  await fetch('/api/user/history', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    credentials: 'include',
+    body: JSON.stringify({history}),
+  });
+};

@@ -1,11 +1,14 @@
 import Terminal from "./components/Terminal";
+import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
 function App() {
   return (
-    <ThemeProvider >
-      <Terminal />
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider >
+        <Terminal />
+      </ThemeProvider>
+    </AuthProvider>
   );
 }
 

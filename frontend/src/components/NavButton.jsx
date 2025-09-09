@@ -1,8 +1,9 @@
+import { setServerHistory } from "../utils/historyStore";
 
 const NavButton = ({name, theme, cycleTheme}) => {
 
-  const handleReset = () => {
-    localStorage.removeItem('cmdHistory');
+  const handleReset = async () => {
+    await setServerHistory([]);
     location.reload();
   }
 

@@ -19,7 +19,7 @@ function parseArgsAndFlags(tokens) {
   return {args, flags, cleanTokens};
 }
 
-export async function executeCommand(input) {
+export async function executeCommand(input, helpers) {
   if(!input) return;
   const rawTokens = input.split(/'([^']*)'|\s+/).filter(Boolean);
   const {args, flags, cleanTokens} = parseArgsAndFlags(rawTokens);
@@ -52,7 +52,7 @@ export async function executeCommand(input) {
   
   if(node?.execute) {
     try {
-      const result = await node.execute({args, flags, content, commandTree});
+      const result = await node.execute({args, flags, content, commandTree}, helpers);
       return result;
     } catch(e) {
       return `Error executing command: ${e.message}`;

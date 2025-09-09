@@ -7,6 +7,7 @@ import todo from '../todo'
 import weather from '../weather'
 import whoami from '../whoami'
 import theme from '../theme'
+import logout from '../logout'
 
 export default {
   help,
@@ -25,4 +26,5 @@ export default {
   theme,
   whoami,
   termiGod,
+  logout,
 }

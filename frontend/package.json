@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build --watch",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -16,7 +16,8 @@
     "marked": "^16.0.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "tailwindcss": "^4.1.10"
+    "tailwindcss": "^4.1.10",
+    "watch": "^1.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.25.0",

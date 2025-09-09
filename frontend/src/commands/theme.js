@@ -1,17 +1,3 @@
-import { themes } from "../utils/themeStore";
-
-let currentCycleTheme = null;
-
-export const setThemeHandler = (func) => {
-  currentCycleTheme = func;
-}
-
-const applyTheme = (name = null) => {
-  if(currentCycleTheme) {
-    return currentCycleTheme(name);
-  }
-}
-
 export default {
   description: {
     format: '',
@@ -27,10 +13,10 @@ export default {
         format: '[theme name]',
         desc: 'Change theme to [theme name]'
       },
-      execute: ({content}) => {
+      execute: async ({content}, {setThemeByName}) => {
         if(!content) return `Enter a theme name`;
 
-        const res = applyTheme(content);
+        const res = await setThemeByName(content);
 
         if(!res) return `No theme named '${content}' found`;
 
@@ -42,19 +28,15 @@ export default {
         format: '',
         desc: 'List all the available themes',
       },
-      execute: () => themes.map(elem => '\t' + elem.name + '\n')
+      execute: (_, {listThemes}) => listThemes().join('\n')
     },
     current: {
       description: {
         format: '',
         desc: 'Show the current Theme',
       },
-      execute: () => {
-        let currentThemeIndex = localStorage.getItem('themeIndex');
-
-        const index = currentThemeIndex ? JSON.parse(currentThemeIndex) : 0;
-
-        return `Current theme name: ${themes[index].name}`;
+      execute: (_, {theme}) => {
+        return `Current theme name: ${theme.name}`;
       }
     }
   }
