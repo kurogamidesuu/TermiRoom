@@ -21,8 +21,25 @@ export const getUsername = async () => {
 
 export const setUsername = async (newName) => {
   try {
-    username = newName;
-    listeners.forEach((cb) => cb(newName));
+    const res = await fetch('/api/user/profile/username', {
+      method: 'POST',
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: 'include',
+      body: JSON.stringify({newUsername: newName})
+    });
+
+    if(res.ok) {
+      const data = await res.json();
+      if(username !== data.user.username) {
+        username = data.user.username;
+        listeners.forEach((cb) => {
+          console.log('Calling listener with: ', username);
+          cb(username);
+        });
+      }
+    }
   } catch(error) {
     console.error('Error setting username: ', error);
   }

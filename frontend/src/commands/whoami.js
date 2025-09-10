@@ -5,8 +5,23 @@ export default {
     format: '',
     desc: 'As it says: Who am I?',
   },
-  execute: () => {
-    return `  ${getUsername()}
+  execute: async () => {
+    const username = (await getUsername() || 'Unknown');
+    let IP = 'Unavailable';
+    try {
+      const res = await fetch('/api/user/profile', {
+        credentials: 'include'
+      });
+      if(res.ok) {
+        const data = await res.json();
+        IP = data.host;
+      }
+    } catch {
+      IP = 'Error fetching IP';
+    }
+
+    return `  Username: ${username}
+  IP: ${IP}
   ${checkOSVer()}`
   },
   subcommands: {
@@ -15,10 +30,10 @@ export default {
         format: '',
         desc: 'Set your name on console',
       },
-      execute: ({content}) => {
+      execute: async ({content}) => {
         if(!content) return `Error: Please enter a name`;
 
-        setUsername(content)
+        await setUsername(content);
         return `Your name has been set "${content}"`
       }
     }

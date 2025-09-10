@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, lazy, Suspense } from "react"
 import Header from "./Header";
 import Input from "./Input";
 import { executeCommand } from "../commands/parser/parser"; 
-import { clearUsername } from "../utils/usernameStore";
+import { clearUsername, getUsername, onUsernameChange } from "../utils/usernameStore";
 import { getServerHistory, setServerHistory } from "../utils/historyStore";
 import Sidenav from "./Sidenav";
 import LoginPage from "./LoginPage";
@@ -19,6 +19,7 @@ const Terminal = () => {
   const [showSidenav, setShowSidenav] = useState(false);
   const [showThemeName, setShowThemeName] = useState(false);
   const [loginView, setLoginView] = useState(true);
+  const [UIusername, setUIusername] = useState('');
   
   const {isLoggedIn, username, login, logout, isLoading} = useAuth();
   const {theme, cycleTheme, setThemeByName, listThemes, refreshThemeFromBackend} = useTheme();
@@ -80,6 +81,22 @@ const Terminal = () => {
     await setServerHistory(newHistory);
     setInput('');
   }
+
+  useEffect(() => {
+    const fetchAndSet = async () => {
+      const name = await getUsername();
+      setUIusername(name);
+    }
+    fetchAndSet();
+
+    const unsubscribe = onUsernameChange((newName) => {
+      setUIusername(newName || '');
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+
 
   useEffect(() => {
     const loadUserHistory = async () => {
@@ -175,7 +192,7 @@ const Terminal = () => {
 
               {/* Input area */}
               <div className="flex w-full pl-1 font-[Hack]">
-                <span className={`mr-1.5 ${theme.username}`}>{`${username}@termiRoom:~$ `}</span>
+                <span className={`mr-1.5 ${theme.username}`}>{`${UIusername}@termiRoom:~$ `}</span>
                 <Input 
                   input={input}
                   setInput={setInput}

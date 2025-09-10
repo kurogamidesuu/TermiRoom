@@ -102,7 +102,22 @@ router.get('/user/profile', authenticate, async (req, res) => {
       id: req.user._id,
       storageQuota: req.user.storageQuota,
       usedSpace: req.user.usedSpace,
+      host: req.host,
     });
+  } catch(error) {
+    res.status(500).json({error: 'Server error.'});
+  }
+});
+
+router.post('/user/profile/username', authenticate, async (req, res) => {
+  const {newUsername} = req.body;
+  try {
+    const user = await User.findOne({username: req.user.username});
+
+    user.username = newUsername;
+    await user.save();
+
+    res.json({user})
   } catch(error) {
     res.status(500).json({error: 'Server error.'});
   }
