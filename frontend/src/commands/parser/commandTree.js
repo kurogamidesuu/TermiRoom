@@ -8,6 +8,7 @@ import weather from '../weather'
 import whoami from '../whoami'
 import theme from '../theme'
 import logout from '../logout'
+import ls from '../ls'
 
 export default {
   help,
@@ -26,5 +27,6 @@ export default {
   theme,
   whoami,
   termiGod,
+  ls,
   logout,
 }

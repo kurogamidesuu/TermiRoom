@@ -9,6 +9,7 @@ import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
+import { getCurrentDirectoryId, getFileNodeById } from "../commands/ls";
 
 const History = lazy(() => import('./History'));
 
@@ -20,6 +21,7 @@ const Terminal = () => {
   const [showThemeName, setShowThemeName] = useState(false);
   const [loginView, setLoginView] = useState(true);
   const [UIusername, setUIusername] = useState('');
+  const [directory, setDirectory] = useState('');
   
   const {isLoggedIn, username, login, logout, isLoading} = useAuth();
   const {theme, cycleTheme, setThemeByName, listThemes, refreshThemeFromBackend} = useTheme();
@@ -86,6 +88,11 @@ const Terminal = () => {
     const fetchAndSet = async () => {
       const name = await getUsername();
       setUIusername(name);
+
+      const dirId = await getCurrentDirectoryId();
+      const dir = await getFileNodeById(dirId);
+      const dirName = dir.name;
+      setDirectory(dirName);
     }
     fetchAndSet();
 
@@ -192,7 +199,7 @@ const Terminal = () => {
 
               {/* Input area */}
               <div className="flex w-full pl-1 font-[Hack]">
-                <span className={`mr-1.5 ${theme.username}`}>{`${UIusername}@termiRoom:~$ `}</span>
+                <span className={`mr-1.5 ${theme.username}`}>{`${UIusername}@termiRoom:~${directory}$ `}</span>
                 <Input 
                   input={input}
                   setInput={setInput}

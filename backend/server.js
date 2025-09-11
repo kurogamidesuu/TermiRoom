@@ -7,6 +7,7 @@ const authenticate = require('./middleware/authenticate');
 require('dotenv').config();
 
 const userRoutes = require('./routes/userRoutes');
+const fileRoutes = require('./routes/fileRoutes');
 
 const app = express();
 
@@ -21,6 +22,7 @@ app.get('/', (req, res) => {
 })
 
 app.use('/api', userRoutes);
+app.use('/api/file', fileRoutes);
 
 // get history from DB
 app.get('/api/user/history', authenticate, async (req, res) => {
