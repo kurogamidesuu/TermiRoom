@@ -9,6 +9,7 @@ import whoami from '../whoami'
 import theme from '../theme'
 import logout from '../logout'
 import ls from '../ls'
+import mkdir from '../mkdir'
 
 export default {
   help,
@@ -28,5 +29,6 @@ export default {
   whoami,
   termiGod,
   ls,
+  mkdir,
   logout,
 }

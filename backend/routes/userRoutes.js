@@ -63,12 +63,13 @@ router.post('/register', async (req, res) => {
         const newUser = new User({
           username,
           password: hash,
-          rootFolder: null,
+          rootDir: null,
+          currDir: null
         });
 
         const savedUser = await newUser.save();
 
-        const rootFolder = new FileNode({
+        const rootDir = new FileNode({
           name: '/',
           type: 'folder',
           owner: savedUser._id,
@@ -77,8 +78,9 @@ router.post('/register', async (req, res) => {
           children: [],
         });
 
-        await rootFolder.save();
-        savedUser.rootFolder = rootFolder._id;
+        await rootDir.save();
+        savedUser.rootDir = rootDir._id;
+        savedUser.currDir = rootDir._id;
         await savedUser.save();
 
         const token = jwt.sign({username: savedUser.username, userId: savedUser._id}, process.env.JWT_SECRET_KEY, {

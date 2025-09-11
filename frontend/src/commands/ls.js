@@ -116,7 +116,10 @@ const showFolderContents = async (children) => {
   for(const child of children) {
     const node = await getFileNodeById(child);
     if(node) {
-      output += node.name + '\n';
+      if(node.type === 'file')
+        output += node.name + '\n';
+      else 
+        output += `/${node.name}\n`;
     }
   }
 

@@ -18,7 +18,11 @@ const userSchema = mongoose.Schema({
     type: Number,
     default: 0,
   },
-  rootFolder: {
+  rootDir: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FileNode',
+  },
+  currDir: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'FileNode',
   },
