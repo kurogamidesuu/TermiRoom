@@ -9,7 +9,7 @@ import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import { getCurrentDirectoryId, getFileNodeById } from "../commands/ls";
+import { DirectoryProvider, useDirectory } from "../context/DirectoryContext";
 
 const History = lazy(() => import('./History'));
 
@@ -21,10 +21,10 @@ const Terminal = () => {
   const [showThemeName, setShowThemeName] = useState(false);
   const [loginView, setLoginView] = useState(true);
   const [UIusername, setUIusername] = useState('');
-  const [directory, setDirectory] = useState('');
   
   const {isLoggedIn, username, login, logout, isLoading} = useAuth();
   const {theme, cycleTheme, setThemeByName, listThemes, refreshThemeFromBackend} = useTheme();
+  const {directory, setDirectory} = useDirectory();
   
   const bottomRef = useRef(null);
 
@@ -50,6 +50,7 @@ const Terminal = () => {
       cycleTheme,
       listThemes,
       theme,
+      setDirectory,
     });
     if(!parsedCmd) return;
 
@@ -71,6 +72,7 @@ const Terminal = () => {
       {
         type: 'input',
         user: username,
+        dirName: directory,
         command: input
       },
       {
@@ -88,11 +90,6 @@ const Terminal = () => {
     const fetchAndSet = async () => {
       const name = await getUsername();
       setUIusername(name);
-
-      const dirId = await getCurrentDirectoryId();
-      const dir = await getFileNodeById(dirId);
-      const dirName = dir.name;
-      setDirectory(dirName);
     }
     fetchAndSet();
 
@@ -102,8 +99,6 @@ const Terminal = () => {
 
     return () => unsubscribe();
   }, []);
-
-
 
   useEffect(() => {
     const loadUserHistory = async () => {
@@ -190,24 +185,27 @@ const Terminal = () => {
           </div>
         )}
         
-        <div className="pl-2 pt-18" >
+          <div className="pl-2 pt-18" >
 
-              {/* history */}
-              <Suspense fallback={<h1>loading...</h1>}>
-                <History history={history} theme={theme} />
-              </Suspense>
+            {/* history */}
+            <Suspense fallback={<h1>loading...</h1>}>
+              <History 
+                history={history}
+                theme={theme}
+              />
+            </Suspense>
 
-              {/* Input area */}
-              <div className="flex w-full pl-1 font-[Hack]">
-                <span className={`mr-1.5 ${theme.username}`}>{`${UIusername}@termiRoom:~${directory}$ `}</span>
-                <Input 
-                  input={input}
-                  setInput={setInput}
-                  handleSubmit={handleSubmit} 
-                />
-              </div>
-          <div ref={bottomRef} />
-        </div>
+            {/* Input area */}
+            <div className="flex w-full pl-1 font-[Hack]">
+              <span className={`mr-1.5 ${theme.username}`}>{`${UIusername}@termiRoom:~${directory}$ `}</span>
+              <Input 
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit} 
+              />
+            </div>
+            <div ref={bottomRef} />
+          </div>
       </div>  
     </>
   )

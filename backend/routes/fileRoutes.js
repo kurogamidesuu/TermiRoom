@@ -65,4 +65,41 @@ router.post('/create/dir', authenticate, async (req, res) => {
   }
 });
 
+// change directory
+router.patch('/cd', authenticate, async (req, res) => {
+  const {dirArray} = req.body;
+
+  try {
+    const currDirId = req.user.currDir;
+    let currDir = await FileNode.findById(currDirId);
+    
+    let found;
+    for(const dir of dirArray) {
+      if(dir === '..') {
+        if(currDirId.equals(req.user.rootDir)) return res.status(500).json({error: 'Cannot go up the root directory.'});
+        currDir = await FileNode.findById(currDir.parent);
+        req.user.currDir = currDir._id;
+        continue;
+      }
+      found = false;
+      for(const childId of currDir.children) {
+        const childDir = await FileNode.findById(childId);
+        if(childDir.name === dir) {
+          found = true;
+          currDir = childDir;
+          req.user.currDir = childId;
+          break;
+        }
+      }
+      if(!found) {
+        return res.status(404).json({error: 'Invalid path: Could not find the directory'});
+      }
+    }
+    await req.user.save();
+    res.json({user: req.user});
+  } catch(error) {
+    return res.status(500).json({error: `Server error: ${error}`})
+  }
+});
+
 module.exports = router;

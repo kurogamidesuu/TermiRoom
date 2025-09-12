@@ -10,6 +10,7 @@ import theme from '../theme'
 import logout from '../logout'
 import ls from '../ls'
 import mkdir from '../mkdir'
+import cd from '../cd'
 
 export default {
   help,
@@ -30,5 +31,6 @@ export default {
   termiGod,
   ls,
   mkdir,
+  cd,
   logout,
 }

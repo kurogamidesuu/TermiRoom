@@ -5,7 +5,7 @@ const History = ({history, theme}) => {
         if(entry.type === 'input') {
           return (
             <pre className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1" key={index}>
-              <span className={theme.username}>{`${entry.user}@termiRoom:~$ `}</span>
+              <span className={theme.username}>{`${entry.user}@termiRoom:~${entry.dirName}$ `}</span>
               <span>{entry.command}</span>
             </pre>
           )

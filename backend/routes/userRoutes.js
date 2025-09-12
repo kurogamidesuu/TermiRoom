@@ -70,7 +70,7 @@ router.post('/register', async (req, res) => {
         const savedUser = await newUser.save();
 
         const rootDir = new FileNode({
-          name: '/',
+          name: 'root',
           type: 'folder',
           owner: savedUser._id,
           parent: null,
