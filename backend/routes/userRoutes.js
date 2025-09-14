@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
-const FileNode = require('../models/FileNode');
+const {FileNode, Folder} = require('../models/FileNode');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const authenticate = require('../middleware/authenticate');
@@ -69,9 +69,8 @@ router.post('/register', async (req, res) => {
 
         const savedUser = await newUser.save();
 
-        const rootDir = new FileNode({
+        const rootDir = new Folder({
           name: 'root',
-          type: 'folder',
           owner: savedUser._id,
           parent: null,
           ancestors: [],

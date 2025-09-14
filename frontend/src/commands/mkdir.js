@@ -9,20 +9,20 @@ export default {
     if(!dirName) return 'Enter the name of directory.';
 
     try {
-      const res = await fetch('/api/file/create/dir', {
+      const res = await fetch('/api/file/create', {
         method: 'POST',
         headers: {
           "Content-Type": "application/json",
         },
         credentials: 'include',
-        body: JSON.stringify({dirName})
+        body: JSON.stringify({name: dirName, type: 'folder'})
       });
 
       if(res.ok) {
         const data = await res.json();
 
-        const {newDir, currDir} = data;
-        return `created ${newDir.name} in ${currDir.name}`;
+        const {newFile, currDir} = data;
+        return `created ${newFile.name} in ${currDir.name}`;
       }
     } catch(error) {
       return `Error creating a directory: ${error}`;

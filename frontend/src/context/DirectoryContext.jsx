@@ -1,17 +1,23 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getCurrentDirectoryId, getFileNodeById } from "../commands/ls";
 
 const DirectoryContext = createContext();
 
 export const DirectoryProvider = ({children}) => {
-  const [directory, setDirectory] = useState('');
+  const [directory, setDirectory] = useState([]);
 
   useEffect(() => {
       const fetchAndSet = async () => {
-        const dirId = await getCurrentDirectoryId();
-        const dir = await getFileNodeById(dirId);
-        const dirName = dir.name;
-        setDirectory(dirName);
+        try {
+          const res = await fetch('/api/file/path');
+          if(res.ok) {
+            const data = await res.json();
+            const pathArr = data.pathArr;
+            setDirectory(pathArr);
+          }
+
+        } catch (error) {
+          console.error(`Error occurred: ${error}`)
+        }
       }
   
       fetchAndSet();

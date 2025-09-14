@@ -1,4 +1,3 @@
-import { getFileNodeById } from "./ls";
 
 export default {
   description: {
@@ -24,11 +23,18 @@ export default {
         const error = await res.json();
         return error.error;
       }
-      const data = await res.json();
-      const dirId = data.user.currDir;
-      const dir = await getFileNodeById(dirId);
-      setDirectory(dir.name);
-      return 'moved';
+      const newRes = await fetch('/api/file/path', {
+        credentials: 'include'
+      });
+      if(newRes.ok) {
+        const data = await newRes.json();
+        const pathArr = data.pathArr;
+        setDirectory(pathArr);
+        return 'moved';
+      } else {
+        return `An error occurred.`;
+      }
+
     } catch {
       return 'Error occurred';
     }

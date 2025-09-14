@@ -9,7 +9,7 @@ import LoginPage from "./LoginPage";
 import SignupPage from "./SignupPage";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
-import { DirectoryProvider, useDirectory } from "../context/DirectoryContext";
+import { useDirectory } from "../context/DirectoryContext";
 
 const History = lazy(() => import('./History'));
 
@@ -72,7 +72,7 @@ const Terminal = () => {
       {
         type: 'input',
         user: username,
-        dirName: directory,
+        dirName: setDirectoryString(),
         command: input
       },
       {
@@ -84,6 +84,12 @@ const Terminal = () => {
     setHistory(newHistory);
     await setServerHistory(newHistory);
     setInput('');
+  }
+
+  const setDirectoryString = () => {
+      let s = '/';
+      directory.map(elem => s += elem + '/');
+      return s;
   }
 
   useEffect(() => {
@@ -197,7 +203,7 @@ const Terminal = () => {
 
             {/* Input area */}
             <div className="flex w-full pl-1 font-[Hack]">
-              <span className={`mr-1.5 ${theme.username}`}>{`${UIusername}@termiRoom:~${directory}$ `}</span>
+              <span className={`mr-1.5 ${theme.username}`}>{`${UIusername}@termiRoom:~${setDirectoryString()}$ `}</span>
               <Input 
                 input={input}
                 setInput={setInput}
