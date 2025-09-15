@@ -104,7 +104,7 @@ const Terminal = () => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     const loadUserHistory = async () => {
@@ -118,12 +118,27 @@ const Terminal = () => {
       await refreshThemeFromBackend();
     }
 
+    const loadUserPath = async () => {
+      const res = await fetch('/api/file/path', {
+        credentials: 'include'
+      });
+
+      if(res.ok) {
+        const data = await res.json();
+        setDirectory(data.pathArr);
+      } else {
+        setDirectory([]);
+      }
+    }
+
     if(isLoggedIn) {
       loadUserHistory();
       loadUserTheme();
+      loadUserPath();
     } else {
       setHistory([]);
       setHistoryLoading(false);
+      setDirectory([]);
     }
   }, [isLoggedIn]);
   
