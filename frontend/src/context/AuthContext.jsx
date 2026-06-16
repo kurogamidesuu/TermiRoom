@@ -1,55 +1,60 @@
-import { createContext, useState, useEffect, useContext } from "react"
+import { createContext, useState, useEffect, useContext } from "react";
+import { checkAuth } from "../api/auth";
 
 const AuthContext = createContext();
 
-export const AuthProvider = ({children}) => {
+export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [username, setUsername] = useState('');
+  const [username, setUsername] = useState("");
+  const [currDir, setCurrDir] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-
   useEffect(() => {
-      const checkAuthStatus = async () => {
-        try {
-          const res = await fetch('/api/auth/check', {
-            credentials: 'include'
-          });
-  
-          if(res.ok) {
-            const data = await res.json();
-            setIsLoggedIn(true);
-            setUsername(data.user.username);
-          } else {
-            setIsLoggedIn(false);
-            setUsername('');
-          }
-        } catch(error) {
-          console.error('Auth check failed: ', error);
-          setIsLoggedIn(false);
-          setUsername('');
-        } finally {
-          setIsLoading(false);
+    const verify = async () => {
+      try {
+        const data = await checkAuth();
+        if (data.authenticated) {
+          setIsLoggedIn(true);
+          setUsername(data.user.username);
+          setCurrDir(data.currDir);
         }
-      };
-  
-      checkAuthStatus();
-    }, []);
-
-    const login = (username) => {
-      setIsLoggedIn(true);
-      setUsername(username);
+      } catch {
+        console.error("Failed to verify user.");
+        // defaults
+      } finally {
+        setIsLoading(false);
+      }
     };
+    verify();
+  }, []);
 
-    const logout = () => {
-      setIsLoggedIn(false);
-      setUsername('');
-    };
+  const login = (username, currDir) => {
+    setIsLoggedIn(true);
+    setUsername(username);
+    setCurrDir(currDir);
+  };
 
-    return (
-      <AuthContext.Provider value={{isLoggedIn, username, login, logout, isLoading}}>
-        {children}
-      </AuthContext.Provider>
-    );
-}
+  const logout = () => {
+    setIsLoggedIn(false);
+    setUsername("");
+    setCurrDir(null);
+  };
+
+  return (
+    <AuthContext.Provider
+      value={{
+        isLoggedIn,
+        username,
+        currDir,
+        setCurrDir,
+        login,
+        logout,
+        isLoading,
+      }}
+    >
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
 export const useAuth = () => useContext(AuthContext);
