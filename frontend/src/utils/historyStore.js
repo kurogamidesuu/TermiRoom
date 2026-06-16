@@ -33,6 +33,6 @@ export const setServerHistory = async (newHistory) => {
   await apiSetHistory(newHistory);
 };
 
-export const clearHistory = () => {
+export const clearHistoryCache = () => {
   cache = null;
 };
