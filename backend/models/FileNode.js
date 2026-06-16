@@ -1,60 +1,115 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const FileNodeSchema = mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  type: {
-    type: String,
-    enum: ['file', 'folder'],
-    required: true,
-  },
-  owner: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
-  parent: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'FileNode',
-    default: null,
-  },
-  ancestors: [
-    {
+const FileNodeSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "Name is required"],
+      trim: true,
+      maxlength: [255, "Name cannot exceed 255 characters"],
+    },
+
+    type: {
+      type: String,
+      enum: ["file", "folder"],
+      required: true,
+      immutable: true,
+    },
+
+    owner: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'FileNode',
-    }
-  ],
-  size: {
-    type: Number,
-    default: 0,
+      ref: "User",
+      required: true,
+      index: true,
+      immutable: true,
+    },
+
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "FileNode",
+      default: null,
+      index: true,
+    },
+
+    ancestors: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "FileNode",
+      },
+    ],
+
+    size: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    isHidden: {
+      type: Boolean,
+      default: false,
+    },
+
+    isReadOnly: {
+      type: Boolean,
+      default: false,
+    },
+
+    lastOpened: {
+      type: Date,
+      default: null,
+    },
   },
-  
-}, {
-  timestamps: true,
-  discriminatorKey: 'type'
-});
+  {
+    timestamps: true,
+    discriminatorKey: "type",
+    versionKey: false,
+  },
+);
 
-const FileNode = mongoose.model('FileNode', FileNodeSchema);
+FileNodeSchema.index(
+  {
+    owner: 1,
+    parent: 1,
+    name: 1,
+  },
+  {
+    unique: true,
+  },
+);
 
-const FileSchema = mongoose.Schema({
+const FileNode = mongoose.model("FileNode", FileNodeSchema);
+
+const FileSchema = new mongoose.Schema({
   content: {
     type: String,
-    default: '',
-  }
+    default: "",
+  },
+
+  extension: {
+    type: String,
+    default: "",
+    lowercase: true,
+    trim: true,
+  },
+
+  mimeType: {
+    type: String,
+    default: "text/plain",
+  },
 });
 
-const FolderSchema = mongoose.Schema({
-  children: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'FileNode',
-    }
-  ]
+const FolderSchema = new mongoose.Schema({});
+
+FileSchema.pre("save", function (next) {
+  this.size = Buffer.byteLength(this.content, "utf8");
+  next();
 });
 
-const File = FileNode.discriminator('file', FileSchema);
-const Folder = FileNode.discriminator('folder', FolderSchema);
+const File = FileNode.discriminator("file", FileSchema);
+const Folder = FileNode.discriminator("folder", FolderSchema);
 
-module.exports = {FileNode, File, Folder};
+module.exports = {
+  FileNode,
+  File,
+  Folder,
+};

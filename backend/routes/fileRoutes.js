@@ -1,136 +1,184 @@
-const express = require('express');
-const authenticate = require('../middleware/authenticate');
-const {FileNode, Folder, File} = require('../models/FileNode');
-const sizeof = require('object-sizeof');
+const express = require("express");
+const authenticate = require("../middleware/authenticate");
+const { FileNode, Folder, File } = require("../models/FileNode");
+const User = require("../models/User");
 
 const router = express.Router();
 
-// get current directory
-router.get('/curr', authenticate, (req, res) => {
-  res.json({id: req.user.currDir});
+// GET /api/file/curr
+router.get("/curr", authenticate, (req, res) => {
+  res.json({ currDir: req.tokenPayload.currDir });
 });
 
-// get FileNode by id
-router.get('/node/:id', async (req, res) => {
-  const {id} = req.params;
+// GET /api/file/node/:id
+router.get("/node/:id", authenticate, async (req, res, next) => {
   try {
-    const fileNode = await FileNode.findById(id);
-    res.json({node: fileNode});
-  } catch(error) {
-    res.status(500).json({error: `Server error: ${error}`});
+    const fileNode = await FileNode.findOne({
+      _id: req.params.id,
+      owner: req.user._id,
+    });
+    if (!fileNode) {
+      return res.status(404).json({ error: "Node not found." });
+    }
+    res.json({ node: fileNode });
+  } catch (error) {
+    next(error);
   }
 });
 
-// get children of a directory
-router.get('/node/:id/children', async (req, res) => {
-  const {id} = req.params;
+// GET /api/file/node/:id/children
+router.get("/node/:id/children", authenticate, async (req, res, next) => {
   try {
-    const fileNode = await FileNode.findById(id);
-    res.json({children: fileNode.children});
-  } catch(error) {
-    res.status(500).json({error: `Server error: ${error}`});
+    const children = await FileNode.find({
+      parent: req.params.id,
+      owner: req.user._id,
+    });
+
+    res.json({ children });
+  } catch (error) {
+    next(error);
   }
 });
 
-// create a directory or a file in current directory
-router.post('/create', authenticate, async (req, res) => {
-  const {name, type} = req.body;
+// POST /api/file/create
+router.post("/create", authenticate, async (req, res, next) => {
+  const { name, type } = req.body;
+
+  if (!name || !type) {
+    return res.status(400).json({ error: "Name and type are required." });
+  }
+  if (!["file", "folder"].includes(type)) {
+    return res.status(400).json({ error: "Type must be 'file' or 'folder'." });
+  }
+
   try {
-    const currDirId = req.user.currDir;
-    const currDir = await FileNode.findById(currDirId);
+    const currDirId = req.tokenPayload.currDir;
+    const currDir = await FileNode.findOne({
+      _id: currDirId,
+      owner: req.user._id,
+    });
 
-    if(!currDir) return res.status(500).json({error: 'Server error.'});
-
-    let newFile;
-    if(type === 'folder') {
-      newFile = new Folder({
-        name: name,
-        owner: req.user._id,
-        parent: currDirId,
-        ancestors: [...currDir.ancestors, currDirId],
-        children: [],
-      });
-    } else if(type === 'file') {
-      newFile = new File({
-        name: name,
-        owner: req.user._id,
-        parent: currDirId,
-        ancestors: [...currDir.ancestors, currDirId],
-        content: '',
-      });
+    if (!currDir) {
+      return res.status(404).json({ error: "Current directory not found." });
     }
 
-    await newFile.save();
+    const nodeData = {
+      name,
+      owner: req.user._id,
+      parent: currDirId,
+      ancestors: [...currDir.ancestors, currDirId],
+    };
 
-    currDir.children.push(newFile._id);
-    const size = sizeof(newFile);
-    currDir.size = currDir.size + size;
-    await currDir.save();
+    let newNode;
+    if (type === "folder") {
+      newNode = new Folder(nodeData);
+    } else {
+      newNode = new File({ ...nodeData, content: "" });
+    }
 
-    res.json({currDir, newFile});
-  } catch(error) {
-    res.status(500).json({error: `Server error: ${error}`});
+    await newNode.save();
+
+    await User.findByIdAndUpdate(req.user._id, {
+      $inc: { usedSpace: newNode.size },
+    });
+
+    res.status(200).json({ node: newNode });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({
+        error: "A file or folder with that name already exists here.",
+      });
+    }
+    next(error);
   }
 });
 
-// change directory
-router.patch('/cd', authenticate, async (req, res) => {
-  const {dirArray} = req.body;
+// PATCH /api/file/cd
+router.patch("/cd", authenticate, async (req, res, next) => {
+  const { dirArray } = req.body;
+
+  if (!Array.isArray(dirArray) || dirArray.length === 0) {
+    return res
+      .status(400)
+      .json({ error: "dirArray must be a non-empty array." });
+  }
 
   try {
-    let currDirId = req.user.currDir;
-    let currDir = await FileNode.findById(currDirId);
-    
-    let found;
-    for(const dir of dirArray) {
-      if(dir === '..') {
-        if(currDirId.equals(req.user.rootDir)) return res.status(500).json({error: 'Cannot go up the root directory.'});
+    let currDirId = req.tokenPayload.currDir;
+    let currDir = await FileNode.findOne({
+      _id: currDirId,
+      owner: req.user._id,
+    });
+
+    if (!currDir)
+      return res.status(404).json({ error: "Current directory not found." });
+
+    for (const segment of dirArray) {
+      if (segment === "..") {
+        if (String(currDirId) === String(req.user.rootDir)) {
+          return res.status(400).json({ error: "Already at root directory." });
+        }
         currDirId = currDir.parent;
-        currDir = await FileNode.findById(currDirId);
-        req.user.currDir = currDir._id;
+        currDir = await FileNode.findOne({
+          _id: currDirId,
+          owner: req.user._id,
+        });
         continue;
       }
-      found = false;
-      if(currDir.children) {
-        for(const childId of currDir.children) {
-          const childDir = await FileNode.findById(childId);
-          if(childDir.name === dir && childDir.type === 'folder') {
-            found = true;
-            currDir = childDir;
-            req.user.currDir = childId;
-            break;
-          }
-        }
+
+      const next = await FileNode.findOne({
+        parent: currDirId,
+        owner: req.user._id,
+        name: segment,
+        type: "folder",
+      });
+
+      if (!next) {
+        return res
+          .status(404)
+          .json({ error: `Directory not found: ${segment}` });
       }
 
-      if(!found) {
-        return res.status(404).json({error: 'Invalid path: Could not find the directory'});
-      }
+      currDir = next;
+      currDirId = next._id;
     }
 
-    await req.user.save();
-
-    res.json({user: req.user});
-  } catch(error) {
-    return res.status(500).json({error: `Server error: ${error}`})
+    res.json({ currDir: currDirId });
+  } catch (error) {
+    next(error);
   }
 });
 
-// get current path
-router.get('/path', authenticate, async (req, res) => {
+// GET /api/file/path
+router.get("/path", authenticate, async (req, res, next) => {
   try {
-    let pathArr = [];
-    let curr = await FileNode.findById(req.user.currDir);
-    while(curr !== null) {
-      pathArr.unshift(curr.name);
-      curr = await FileNode.findById(curr.parent);
+    const currDir = await FileNode.findOne({
+      _id: req.tokenPayload.currDir,
+      owner: req.user._id,
+    });
+
+    if (!currDir) {
+      return res.status(404).json({ error: "Current directory not found." });
     }
 
-    res.json({pathArr});
-  } catch(error) {
-    res.status(500).json({error: `Server error: ${error}`})
-  }
+    const ancestorDocs = await FileNode.find(
+      { _id: { $in: currDir.ancestors } },
+      { name: 1 },
+    );
 
-})
+    const ancestorMap = Object.fromEntries(
+      ancestorDocs.map((a) => [String(a._id), a.name]),
+    );
+
+    const pathArr = [
+      ...currDir.ancestors.map((id) => ancestorMap[String(id)]),
+      currDir.name,
+    ];
+
+    res.json({ pathArr });
+  } catch (error) {
+    next(error);
+  }
+});
 
 module.exports = router;

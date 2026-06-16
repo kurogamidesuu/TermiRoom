@@ -1,142 +1,171 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const User = require('../models/User');
-const {FileNode, Folder} = require('../models/FileNode');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const authenticate = require('../middleware/authenticate');
+const User = require("../models/User");
+const { FileNode, Folder } = require("../models/FileNode");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const authenticate = require("../middleware/authenticate");
+const mongoose = require("mongoose");
 
-router.get('/login/:username', async (req, res) => {
-  const {username} = req.params;
+const signToken = (user, currDirId) => {
+  return jwt.sign(
+    {
+      username: user.username,
+      userId: user._id,
+      currDir: currDirId,
+    },
+    process.env.JWT_SECRET_KEY,
+    { expiresIn: "7d" },
+  );
+};
 
-  try {
-    const user = await User.findOne({username: username});
-    if(!user) {
-      return res.status(404).json({error: `${username} username doesn't exist`});
-    }
+const setCookieToken = (res, token) => {
+  res.cookie("token", token, {
+    httpOnly: true,
+    sameSite: "lax",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  });
+};
 
-    res.json({username: user.username, id: user._id});
-  } catch(error) {
-    return res.status(500).json({error: 'Server error.'});
-  }
-});
+// POST /api/user/login
+router.post("/login", async (req, res, next) => {
+  const { username, password } = req.body;
 
-router.post('/login/:username', async (req, res) => {
-  const {username} = req.params;
-  const {password} = req.body;
-  
-  try {
-    const user = await User.findOne({username: username});
-    if(!user) {
-      return res.status(404).json({error: 'username not found'});
-    }
-
-    bcrypt.compare(password, user.password, (err, result) => {
-      if (err) return res.status(400).json({error: 'Server error!'});
-
-      if(result) {
-        let token = jwt.sign({username: user.username, userId: user._id}, process.env.JWT_SECRET_KEY);
-        res.cookie("token", token);
-        res.json({user})
-      } else {
-        return res.status(400).json({error: 'Invalid password.'});
-      }
+  if (!username || !password) {
+    return res.status(400).json({
+      error: "Username and password are required.",
     });
-  } catch(error) {
-    res.status(500).json({error: 'Server error.'});
   }
-});
-
-router.post('/register', async (req, res) => {
-  const {username, password} = req.body;
 
   try {
-    const user = await User.findOne({username: username});
-    if(user) {
-      return res.status(400).json({error: 'Username already exists.'});
+    const user = await User.findOne({ username: username }).select("+password");
+    if (!user) {
+      return res.status(401).json({ error: "Invalid credentials." });
     }
 
-    bcrypt.genSalt(10, (err, salt) => {
-      bcrypt.hash(password, salt, async (err, hash) => {
-        if(err) return res.status(400).json({error: 'Server error!'});
+    const match = bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ error: "Invalid credentials." });
+    }
 
-        const newUser = new User({
-          username,
-          password: hash,
-          rootDir: null,
-          currDir: null
-        });
+    const token = signToken(user, user.rootDir);
+    setCookieToken(res, token);
 
-        const savedUser = await newUser.save();
-
-        const rootDir = new Folder({
-          name: 'root',
-          owner: savedUser._id,
-          parent: null,
-          ancestors: [],
-          children: [],
-        });
-
-        await rootDir.save();
-        savedUser.rootDir = rootDir._id;
-        savedUser.currDir = rootDir._id;
-        await savedUser.save();
-
-        const token = jwt.sign({username: savedUser.username, userId: savedUser._id}, process.env.JWT_SECRET_KEY, {
-          expiresIn: '7d'
-        });
-
-        res.cookie('token', token);
-
-        res.json({user: {username: savedUser.username, id: savedUser._id}});
-      });
-    });
-  } catch(error) {
-    res.status(500).json({error: 'Server error.'});
-  }
-});
-
-router.get('/user/profile', authenticate, async (req, res) => {
-  try {
     res.json({
-      username: req.user.username,
-      id: req.user._id,
-      storageQuota: req.user.storageQuota,
-      usedSpace: req.user.usedSpace,
-      host: req.host,
+      user: { username: user.username, id: user._id },
+      currDir: user.rootDir,
     });
-  } catch(error) {
-    res.status(500).json({error: 'Server error.'});
+  } catch (error) {
+    next(error);
   }
 });
 
-router.post('/user/profile/username', authenticate, async (req, res) => {
-  const {newUsername} = req.body;
+// POST /api/user/register
+router.post("/register", async (req, res, next) => {
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ error: "Username and password are required." });
+  }
+
   try {
-    const user = await User.findOne({username: req.user.username});
+    const exisitingUser = await User.findOne({ username });
+    if (exisitingUser) {
+      return res.status(400).json({ error: "Username already exists." });
+    }
 
-    user.username = newUsername;
-    await user.save();
+    const hash = await bcrypt.hash(password, 10);
 
-    res.json({user})
-  } catch(error) {
-    res.status(500).json({error: 'Server error.'});
+    const newUser = new User({
+      username,
+      password: hash,
+      rootDir: new mongoose.Types.ObjectId(),
+    });
+
+    const rootDir = new Folder({
+      name: "root",
+      owner: newUser._id,
+      parent: null,
+      ancestors: [],
+    });
+
+    await rootDir.save();
+    newUser.rootDir = rootDir._id;
+    await newUser.save();
+
+    const token = signToken(newUser, rootDir._id);
+    setCookieToken(res, token);
+
+    res.status(201).json({
+      user: { username: newUser.username, id: newUser._id },
+      currDir: rootDir._id,
+    });
+  } catch (error) {
+    next(error);
   }
 });
 
-router.get('/auth/check', authenticate, (req, res) => {
+// GET /api/user/profile
+router.get("/profile", authenticate, async (req, res) => {
+  res.json({
+    username: req.user.username,
+    id: req.user._id,
+    storageQuota: req.user.storageQuota,
+    usedSpace: req.user.usedSpace,
+  });
+});
+
+// PATCH /api/user/profile/username
+router.patch("/profile/username", authenticate, async (req, res, next) => {
+  const { newUsername } = req.body;
+
+  if (
+    !newUsername ||
+    typeof newUsername !== "string" ||
+    newUsername.trim().length < 2
+  ) {
+    return res.status(400).json({ error: "Invalid username." });
+  }
+
+  try {
+    const taken = await User.findOne({ username: newUsername.trim() });
+    if (taken) {
+      return res.status(400).json({ error: "Username already taken." });
+    }
+
+    req.user.username = newUsername.trim();
+    await req.user.save();
+
+    const token = signToken(req.user, req.user.rootDir);
+    setCookieToken(res, token);
+
+    res.json({ username: req.user.username });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// GET /api/user/auth/check
+router.get("/auth/check", authenticate, (req, res) => {
   res.json({
     authenticated: true,
     user: {
       username: req.user.username,
       id: req.user._id,
-    }
+    },
+    currDir: req.tokenPayload.currDir,
   });
 });
 
-router.post('/auth/logout', (req, res) => {
-  res.clearCookie('token');
-  res.json({message: 'Logged out successfully.'});
+// POST api/user/auth/logout
+router.post("/auth/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    sameSite: "lax",
+  });
+  res.json({ message: "Logged out successfully." });
 });
 
 module.exports = router;

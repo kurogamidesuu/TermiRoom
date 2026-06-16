@@ -182,7 +182,7 @@ const Terminal = () => {
 
   return (
     <>
-      <div style={{overflowAnchor: 'none'}} className={`flex flex-col w-full min-h-screen ${theme.text} bg-linear-to-b ${theme.bg} font-mono font-[Hack] text-sm sm:text-xs md:text-sm lg:text-sm`}>
+      <div style={{overflowAnchor: 'none'}} className={`flex flex-col w-full min-h-screen ${theme.text} bg-linear-to-b ${theme.bg} font-mono font-[Hack] text-[12px]`}>
         {/* Header */}
         <Header
           showSidenav={showSidenav} 
