@@ -1,5 +1,4 @@
-let history = null;
-let listeners = [];
+import { getHistory, setHistory as apiSetHistory } from "../api/utils";
 
 const text = `
 ████████╗███████╗██████╗ ███╗   ███╗██╗██████╗  ██████╗  ██████╗ ███╗   ███╗
@@ -9,40 +8,31 @@ const text = `
    ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║  ██║╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
                                                                             
-`
-const initial_message = {
-  type: 'output',
-  text: `${text}\nWelcome to termiRoom!\nWrite 'help' to check the available commands\nVisit the Github repo for more information: https://github.com/kurogamidesuu/TermiRoom.git`
-}
+`;
+const INITIAL_MESSAGE = {
+  type: "output",
+  text: `${text}\nWelcome to termiRoom!\nWrite 'help' to check the available commands\nVisit the Github repo for more information: https://github.com/kurogamidesuu/TermiRoom.git`,
+};
+
+let cache = null;
 
 export const getServerHistory = async () => {
-  if(!history) {
-    try {
-      const res = await fetch('/api/user/history', {
-        credentials: 'include'
-      });
-      if(res.ok) {
-        const data = await res.json();
-        history = (data.history && data.history.length > 0) ? data.history : [initial_message];
-      } else {
-        history = [initial_message];
-      }
-    } catch {
-      history = [initial_message];
-    }
+  if (cache) return cache;
+  try {
+    const history = await getHistory();
+
+    cache = history.length > 0 ? history : [INITIAL_MESSAGE];
+  } catch {
+    cache = [INITIAL_MESSAGE];
   }
-  return history;
-}
+  return cache;
+};
 
 export const setServerHistory = async (newHistory) => {
-  history = newHistory;
-  listeners.forEach((cb) => cb(newHistory));
-  await fetch('/api/user/history', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    credentials: 'include',
-    body: JSON.stringify({history}),
-  });
+  cache = newHistory;
+  await apiSetHistory(newHistory);
+};
+
+export const clearHistory = () => {
+  cache = null;
 };
