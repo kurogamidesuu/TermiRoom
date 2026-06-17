@@ -1,162 +1,166 @@
+const GEOAPIFY_API_KEY = import.meta.env.VITE_GEOAPIFY_API_KEY;
+
 export default {
   description: {
-    format: '[city]',
-    desc: 'Check weather of a city'
+    format: "[city]",
+    desc: "Check weather of a city",
   },
   args: {
     min: 0,
     max: 1,
     description: {
-      '- detailed': 'Get a detailed description of weather in a city',
-    }
+      "-detailed": "Get a detailed description of weather in a city",
+    },
   },
-  execute: async ({args, content}) => {
-    if(!content.length) return `Please enter a location or allow location access with "weather here"`;
+  execute: async ({ args, content }) => {
+    if (!content.trim()) {
+      return `Please enter a location or allow location access with "weather here"`;
+    }
 
     try {
-      const geocodeRes = await fetch(`https://geocode.maps.co/search?q=${content}&api_key=685e45f632329287339657ctza3e53d`);
+      const geocodeRes = await fetch(
+        `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(content)}&apiKey=${GEOAPIFY_API_KEY}`,
+      );
+
+      if (!geocodeRes.ok) {
+        return `Geocoding Error: Check API Key or try again later.`;
+      }
+
       const geocodeData = await geocodeRes.json();
 
-      const {lat, lon, location} = {lat: geocodeData[0].lat, lon: geocodeData[0].lon, location: geocodeData[0].display_name};
+      if (!geocodeData.features || geocodeData.features.length === 0) {
+        return `Location not found: '${content}'. Please try a different city name.`;
+      }
 
-      const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
+      const {
+        lat,
+        lon,
+        formatted: location,
+      } = geocodeData.features[0].properties;
+
+      const weatherRes = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`,
+      );
+
+      if (!weatherRes.ok) {
+        return `Weather Data Error: Unable to fetch forecast.`;
+      }
+
       const weatherData = await weatherRes.json();
 
-      if(args.detailed) {
-        return `Weather in ${location}:
-    Time: ${weatherData.current.time} 
-    Timezone: ${weatherData.timezone} ${weatherData.timezone_abbreviation}
-    Temperature: ${weatherData.current.temperature_2m}°C
-    Wind Speed: ${weatherData.current.wind_speed_10m} km/h
-    Weather: ${handleCode(weatherData.current.weather_code)}
-    `;
-      }
-      return `Weather in ${location}:
-    Temperature: ${weatherData.current.temperature_2m}°C
-    Weather: ${handleCode(weatherData.current.weather_code)}`
-    } catch(error) {
-      console.log(error.message);
-      return `Error occurred: Try again!`;
+      return formatWeatherOutput(weatherData, location, args.detailed);
+    } catch (error) {
+      console.error("Weather command error:", error);
+      return `Error fetching weather data. Please try again later.`;
     }
   },
+
   subcommands: {
     here: {
       description: {
-        format: '',
-        desc: 'Shows the weather of your current location.',
+        format: "",
+        desc: "Shows the weather of your current location.",
       },
       args: {
         min: 0,
         max: 1,
       },
-      execute: async ({args}) => {
+      execute: async ({ args }) => {
         try {
-          const location = await getLocation();
-          const lat = location.coords.latitude;
-          const lon = location.coords.longitude;
+          const { coords } = await getLocation();
+          const lat = coords.latitude;
+          const lon = coords.longitude;
 
-          const res = await fetch(`https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}&api_key=685e45f632329287339657ctza3e53d`);
-          const data = await res.json();
+          const [geocodeRes, weatherRes] = await Promise.all([
+            fetch(
+              `https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${GEOAPIFY_API_KEY}`,
+            ),
+            fetch(
+              `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`,
+            ),
+          ]);
 
-          const place = data.display_name;
+          if (!geocodeRes.ok || !weatherRes.ok) {
+            return `Error: Could not retrieve location or weather data.`;
+          }
 
-          const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,wind_speed_10m,weather_code&timezone=auto`);
-        const weatherData = await weatherRes.json();
+          const geocodeData = await geocodeRes.json();
+          const weatherData = await weatherRes.json();
 
+          let place = "your location";
+          if (geocodeData.features && geocodeData.features.length > 0) {
+            place =
+              geocodeData.features[0].properties.city ||
+              geocodeData.features[0].properties.formatted ||
+              "your location";
+          }
 
-        if(args.length) {
-          if(!args.detailed) return `Invalid argument provided.`
+          return formatWeatherOutput(weatherData, place, args.detailed);
+        } catch (error) {
+          if (error.code === 1) {
+            return `Location access denied. Please allow location permissions in your browser.`;
+          }
+          return `Error occurred: ${error.message}`;
         }
-
-        if(args.detailed) {
-          return `Weather in ${place}:
-      Time: ${weatherData.current.time} 
-      Timezone: ${weatherData.timezone} ${weatherData.timezone_abbreviation}
-      Temperature: ${weatherData.current.temperature_2m}°C
-      Wind Speed: ${weatherData.current.wind_speed_10m} km/h
-      Weather: ${handleCode(weatherData.current.weather_code)}
-      `;
-        }
-
-        return `Weather in ${place}:
-      Temperature: ${weatherData.current.temperature_2m}°C
-      Weather: ${handleCode(weatherData.current.weather_code)}`
-        } catch(error) {
-          return `Error occurred: ${error.message}`
-        }
-      }
-    }
-  }
-}
+      },
+    },
+  },
+};
 
 const getLocation = () => {
   return new Promise((resolve, reject) => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => resolve(position),
-      (error) => reject(error)
-    )
-  })
-}
+    navigator.geolocation.getCurrentPosition(resolve, reject);
+  });
+};
+
+const formatWeatherOutput = (weatherData, location, isDetailed) => {
+  const current = weatherData.current;
+  const weatherString = handleCode(current.weather_code);
+
+  if (isDetailed) {
+    return `Weather in ${location}:
+    Time: ${current.time.replace("T", " ")} 
+    Timezone: ${weatherData.timezone} ${weatherData.timezone_abbreviation}
+    Temperature: ${current.temperature_2m}°C
+    Wind Speed: ${current.wind_speed_10m} km/h
+    Condition: ${weatherString}`;
+  }
+
+  return `Weather in ${location}:
+    Temperature: ${current.temperature_2m}°C
+    Condition: ${weatherString}`;
+};
 
 function handleCode(code) {
-  switch(code) {
-    case 0:
-      return 'Clear sky';
-    case 1:
-      return 'Mainly clear';
-    case 2:
-      return 'Partly cloudy';
-    case 3:
-      return 'Overcast';
-    case 45:
-      return 'Fog';
-    case 48:
-      return 'Depositing Rime Fog';
-    case 51:
-      return 'Light Drizzle';
-    case 53:
-      return 'Moderate Drizzle';
-    case 55:
-      return 'Dense Drizzle';
-    case 56:
-      return 'Light Freezing Drizzle';
-    case 57:
-      return 'Dense Freezing Drizzle';
-    case 61:
-      return 'Slight Rain';
-    case 63:
-      return 'Moderate Rain';
-    case 65:
-      return 'Heavy Rain';
-    case 66:
-      return 'Light freezing rain';
-    case 67:
-      return 'Heavy freezing rain';
-    case 71:
-      return 'Slight snow fall';
-    case 73:
-      return 'Moderate snow fall';
-    case 75:
-      return 'Heavy snow fall';
-    case 77:
-      return 'Snow grains';
-    case 80:
-      return 'Slight rain showers';
-    case 81:
-      return 'Moderate rain showers';
-    case 82:
-      return 'Violent rain showers';
-    case 85:
-      return 'Slight snow showers';
-    case 86:
-      return 'Heavy snow showers';
-    case 95:
-      return 'Thunderstorm';
-    case 96:
-      return 'Light hailstorm';
-    case 99:
-      return 'Heavy hailstorm';
-    default:
-      return 'Unknown code';
-  }
+  const codes = {
+    0: "Clear sky",
+    1: "Mainly clear",
+    2: "Partly cloudy",
+    3: "Overcast",
+    45: "Fog",
+    48: "Depositing Rime Fog",
+    51: "Light Drizzle",
+    53: "Moderate Drizzle",
+    55: "Dense Drizzle",
+    56: "Light Freezing Drizzle",
+    57: "Dense Freezing Drizzle",
+    61: "Slight Rain",
+    63: "Moderate Rain",
+    65: "Heavy Rain",
+    66: "Light freezing rain",
+    67: "Heavy freezing rain",
+    71: "Slight snow fall",
+    73: "Moderate snow fall",
+    75: "Heavy snow fall",
+    77: "Snow grains",
+    80: "Slight rain showers",
+    81: "Moderate rain showers",
+    82: "Violent rain showers",
+    85: "Slight snow showers",
+    86: "Heavy snow showers",
+    95: "Thunderstorm",
+    96: "Light hailstorm",
+    99: "Heavy hailstorm",
+  };
+  return codes[code] || "Unknown condition";
 }

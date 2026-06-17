@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
   try {
     const token = req.cookies.token;
 
@@ -11,10 +12,14 @@ const authenticate = (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+    const user = await User.findById(decoded.userId);
 
-    req.user = { _id: decoded.userId, username: decoded.username };
+    if (!user) {
+      return res.status(401).json({ error: "Invalid token." });
+    }
+
+    req.user = user;
     req.tokenPayload = decoded;
-
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {
