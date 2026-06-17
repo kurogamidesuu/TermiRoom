@@ -5,20 +5,35 @@ export default {
     desc: "Change directory",
     format: "[path]",
   },
-  execute: async ({ content }, { currDir, setCurrDir, setDirectory }) => {
+  execute: ({ content }, { currDir, setCurrDir, directory, setDirectory }) => {
     if (!content) return "Enter the name of directory.";
 
     const dirArray = resolvePath(content);
     if (!dirArray || dirArray.length === 0) return "Invalid path.";
 
-    try {
-      const data = await apiCd(dirArray, currDir);
-      setCurrDir(data.currDir);
-      setDirectory(data.pathArr);
-      return "";
-    } catch (error) {
-      return error.message;
+    const originalDirectory = [...directory];
+
+    let optimisticPath = [...directory];
+    for (const segment of dirArray) {
+      if (segment === "..") {
+        optimisticPath.pop();
+      } else {
+        optimisticPath.push(segment);
+      }
     }
+    setDirectory(optimisticPath);
+
+    apiCd(dirArray, currDir)
+      .then((data) => {
+        setCurrDir(data.currDir);
+        setDirectory(data.pathArr);
+      })
+      .catch((error) => {
+        setDirectory(originalDirectory);
+        console.error("Optimistic cd failed:", error.message);
+      });
+
+    return "";
   },
 };
 

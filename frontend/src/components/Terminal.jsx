@@ -67,6 +67,7 @@ const Terminal = () => {
       listThemes,
       theme,
       // directory
+      directory,
       setDirectory,
       currDir,
       setCurrDir,
@@ -106,6 +107,13 @@ const Terminal = () => {
 
     setHistory(newHistory);
     setInput("");
+
+    setServerHistory(newHistory).catch((error) => {
+      console.error(
+        "Background history sync failed, but UI is unaffected.",
+        error,
+      );
+    });
   };
 
   const directoryString = () => {
