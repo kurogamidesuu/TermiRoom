@@ -105,12 +105,22 @@ const Terminal = () => {
     ];
 
     setHistory(newHistory);
-    await setServerHistory(newHistory);
+
+    try {
+      await setServerHistory(newHistory);
+    } catch (error) {
+      console.error(
+        "Failed to sync history to server. State saved locally. ",
+        error,
+      );
+    }
     setInput("");
   };
 
   const directoryString = () => {
-    if (!directory.length) return "/";
+    if (!directory || !Array.isArray(directory) || directory.length === 0) {
+      return "/";
+    }
     return "/" + directory.join("/") + "/";
   };
 

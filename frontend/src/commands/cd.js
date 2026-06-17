@@ -14,7 +14,7 @@ export default {
     try {
       const data = await apiCd(dirArray, currDir);
       setCurrDir(data.currDir);
-      setDirectory(data.pathArray);
+      setDirectory(data.pathArr);
       return "";
     } catch (error) {
       return error.message;

@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema(
     },
 
     history: {
-      type: [String],
+      type: Array,
       default: [],
       validate: {
         validator: (arr) => arr.length <= 1000,
