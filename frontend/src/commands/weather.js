@@ -7,7 +7,7 @@ export default {
   },
   args: {
     min: 0,
-    max: 1,
+    max: 100,
     description: {
       "-detailed": "Get a detailed description of weather in a city",
     },
