@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
+import { useEffect, useRef, useState } from "react";
 import Header from "./Header";
 import Input from "./Input";
 import { executeCommand } from "../commands/parser/parser";
@@ -15,8 +15,7 @@ import { useAuth } from "../context/AuthContext";
 import { useDirectory } from "../context/DirectoryContext";
 import { logout as apiLogout } from "../api/auth";
 import { getPath } from "../api/file";
-
-const History = lazy(() => import("./History"));
+import History from "./History";
 
 const Terminal = () => {
   const [input, setInput] = useState("");
@@ -210,9 +209,7 @@ const Terminal = () => {
         )}
 
         <div className="pl-2 pt-18">
-          <Suspense fallback={<h1>loading...</h1>}>
-            <History history={history} theme={theme} />
-          </Suspense>
+          <History history={history} theme={theme} />
 
           <div className="flex w-full pl-1 font-[Hack]">
             <span className={`mr-1.5 ${theme.username}`}>
