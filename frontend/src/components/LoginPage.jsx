@@ -6,7 +6,7 @@ import { login as apiLogin } from "../api/auth";
 const LoginPage = ({ setLoginView }) => {
   const [input, setInput] = useState("");
   const [history, setHistory] = useState([
-    "Please enter username to login [or type `register` to create an account]",
+    "Please enter your username  [or type `register` to create an account]",
   ]);
   const [step, setStep] = useState("username");
   const [currUsername, setCurrUsername] = useState("");
@@ -20,7 +20,7 @@ const LoginPage = ({ setLoginView }) => {
     }
 
     const value = input.trim();
-    if (!input) return;
+    if (!value) return;
 
     if (step === "username") {
       setCurrUsername(value);
@@ -50,13 +50,12 @@ const LoginPage = ({ setLoginView }) => {
    ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██╔══██╗██║   ██║██║   ██║██║╚██╔╝██║
    ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║  ██║╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
-                                                                            
   `;
 
   return (
     <div
       style={{ overflowAnchor: "none" }}
-      className={`flex flex-col w-full min-h-screen pl-3 text-green-600 bg-linear-to-b from-[#101020] to-[#101010] font-[Hack] text-sm sm:text-xs`}
+      className="flex flex-col w-full min-h-screen pl-3 text-green-600 bg-linear-to-b from-[#101020] to-[#101010] font-[Hack] text-sm sm:text-xs md:text-sm lg:text-sm"
     >
       <pre>{headText}</pre>
       <div className="pb-3">

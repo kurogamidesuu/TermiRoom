@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     const verify = async () => {
       try {
         const data = await checkAuth();
-        if (data.authenticated) {
+        if (data) {
           setIsLoggedIn(true);
           setUsername(data.user.username);
           setCurrDir(data.currDir);

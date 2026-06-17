@@ -10,9 +10,7 @@ export const getPath = async (currDir) => {
 };
 
 export const getNode = async (id) => {
-  const res = await fetch(`${BASE}/node/${id}`, {
-    credentials: "include",
-  });
+  const res = await fetch(`${BASE}/node/${id}`, { credentials: "include" });
   if (!res.ok) return null;
   const data = await res.json();
   return data.node;
@@ -37,9 +35,7 @@ export const createNode = async (name, type, currDir) => {
     body: JSON.stringify({ name, type, currDir }),
   });
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(res.error || "Failed to create node.");
-  }
+  if (!res.ok) throw new Error(data.error || "Failed to create node.");
   return data.node;
 };
 
@@ -53,8 +49,6 @@ export const cd = async (dirArray, currDir) => {
     body: JSON.stringify({ dirArray, currDir }),
   });
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || "Failed to change directory.");
-  }
+  if (!res.ok) throw new Error(data.error || "Failed to change directory.");
   return data; // { currDir: newId, pathArr }
 };

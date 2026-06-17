@@ -34,9 +34,7 @@ export const ThemeProvider = ({ children }) => {
     const index = themes.findIndex(
       (t) => t.name.toLowerCase() === name.toLowerCase(),
     );
-    if (index === -1) {
-      return false;
-    }
+    if (index === -1) return false;
     applyTheme(index);
     await setTheme(index);
     return true;

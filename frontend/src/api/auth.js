@@ -2,9 +2,7 @@ const BASE = "/api/user";
 
 export const checkAuth = async () => {
   const res = await fetch(`${BASE}/auth/check`, { credentials: "include" });
-  if (!res.ok) {
-    return null;
-  }
+  if (!res.ok) return null;
   return res.json(); // { authenticated, user: { username, id }, currDir }
 };
 
@@ -18,9 +16,7 @@ export const login = async (username, password) => {
     body: JSON.stringify({ username, password }),
   });
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || "Login failed.");
-  }
+  if (!res.ok) throw new Error(data.error || "Login failed.");
   return data; // { user: { username, id }, currDir }
 };
 
@@ -34,9 +30,7 @@ export const register = async (username, password) => {
     body: JSON.stringify({ username, password }),
   });
   const data = await res.json();
-  if (!res.ok) {
-    throw new Error(data.error || "Registration failed.");
-  }
+  if (!res.ok) throw new Error(data.error || "Registration failed.");
   return data; // { user: { username, id }, currDir }
 };
 

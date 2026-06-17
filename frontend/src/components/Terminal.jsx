@@ -132,7 +132,7 @@ const Terminal = () => {
       setHistoryLoading(false);
       setDirectory([]);
     }
-  }, [isLoggedIn, currDir, refreshThemeFromBackend, setDirectory]);
+  }, [isLoggedIn]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });

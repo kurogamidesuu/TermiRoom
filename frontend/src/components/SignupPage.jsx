@@ -38,7 +38,7 @@ const SignupPage = ({ setLoginView }) => {
           `Registration successful! Logged in as ${data.user.username}.`,
         ]);
         setStep("done");
-        login(data.uesr.username, data.currDir);
+        login(data.user.username, data.currDir);
       } catch (error) {
         setHistory([...history, error.message]);
         setInput("");
@@ -53,13 +53,12 @@ const SignupPage = ({ setLoginView }) => {
    ██║   ██╔══╝  ██╔══██╗██║╚██╔╝██║██║██╔══██╗██║   ██║██║   ██║██║╚██╔╝██║
    ██║   ███████╗██║  ██║██║ ╚═╝ ██║██║██║  ██║╚██████╔╝╚██████╔╝██║ ╚═╝ ██║
    ╚═╝   ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝╚═╝╚═╝  ╚═╝ ╚═════╝  ╚═════╝ ╚═╝     ╚═╝
-                                                                            
   `;
 
   return (
     <div
       style={{ overflowAnchor: "none" }}
-      className={`flex flex-col w-full min-h-screen pl-3 text-green-600 bg-linear-to-b from-[#101020] to-[#101010] font-[Hack] text-sm sm:text-xs md:text-sm lg:text-sm`}
+      className="flex flex-col w-full min-h-screen pl-3 text-green-600 bg-linear-to-b from-[#101020] to-[#101010] font-[Hack] text-sm sm:text-xs md:text-sm lg:text-sm"
     >
       <pre>{headText}</pre>
       <div className="pb-3">
