@@ -1,3 +1,5 @@
+const API_BASE = import.meta.env.VITE_API_URL || "";
+
 export const apiClient = async (endpoint, options = {}) => {
   const { method = "GET", body, headers, ...customConfig } = options;
 
@@ -15,7 +17,9 @@ export const apiClient = async (endpoint, options = {}) => {
     config.body = JSON.stringify(body);
   }
 
-  const res = await fetch(endpoint, config);
+  const url = endpoint.startswith("http") ? endpoint : `${API_BASE}${endpoint}`;
+
+  const res = await fetch(url, config);
 
   if (res.status === 401) {
     window.dispatchEvent(new Event("unauthorized"));
