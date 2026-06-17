@@ -17,7 +17,7 @@ export const apiClient = async (endpoint, options = {}) => {
     config.body = JSON.stringify(body);
   }
 
-  const url = endpoint.startswith("http") ? endpoint : `${API_BASE}${endpoint}`;
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE}${endpoint}`;
 
   const res = await fetch(url, config);
 
