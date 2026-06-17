@@ -57,6 +57,12 @@ router.post("/create", authenticate, async (req, res, next) => {
       return res.status(404).json({ error: "Current directory not found." });
     }
 
+    if (req.user.usedSpace >= req.user.storageQuota) {
+      return res.status(403).json({
+        error: "Storage quota exceeded. Please delete files to free up space.",
+      });
+    }
+
     const nodeData = {
       name,
       owner: req.user._id,
