@@ -1,32 +1,19 @@
+import { createNode } from "../api/file";
+
 export default {
   description: {
-    dsec: '',
-    format: ''
+    dsec: "Create new directory",
+    format: "[name]",
   },
-  execute: async ({content}) => {
+  execute: async ({ content }, { currDir }) => {
     const dirName = content.trim();
-
-    if(!dirName) return 'Enter the name of directory.';
+    if (!dirName) return "Enter the name of directory.";
 
     try {
-      const res = await fetch('/api/file/create', {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: 'include',
-        body: JSON.stringify({name: dirName, type: 'folder'})
-      });
-
-      if(res.ok) {
-        const data = await res.json();
-
-        const {newFile, currDir} = data;
-        return `created ${newFile.name} in ${currDir.name}`;
-      }
-    } catch(error) {
-      return `Error creating a directory: ${error}`;
+      const node = await createNode(dirName, "folder", currDir);
+      return `created /${node.name}`;
+    } catch (error) {
+      return error.message;
     }
-
-  }
-}
+  },
+};

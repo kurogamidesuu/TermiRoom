@@ -3,10 +3,9 @@ import Header from "./Header";
 import Input from "./Input";
 import { executeCommand } from "../commands/parser/parser";
 import {
-  clearHistory,
-  clearHistoryCache,
   getServerHistory,
   setServerHistory,
+  clearHistoryCache,
 } from "../utils/historyStore";
 import Sidenav from "./Sidenav";
 import LoginPage from "./LoginPage";
@@ -16,7 +15,6 @@ import { useAuth } from "../context/AuthContext";
 import { useDirectory } from "../context/DirectoryContext";
 import { logout as apiLogout } from "../api/auth";
 import { getPath } from "../api/file";
-import { setHistory } from "../api/utils";
 
 const History = lazy(() => import("./History"));
 
@@ -52,7 +50,7 @@ const Terminal = () => {
     try {
       await apiLogout();
     } catch (error) {
-      console.error("Logout failed: ", error);
+      console.error("Logout failed:", error);
     } finally {
       logout();
       setHistory([]);
@@ -74,7 +72,7 @@ const Terminal = () => {
       setCurrDir,
       // user
       username,
-      setUsername: (newName) => executeCommand(newName, currDir),
+      setUsername: (newName) => login(newName, currDir),
     };
 
     let parsedCmd = await executeCommand(input, helpers);
@@ -134,7 +132,7 @@ const Terminal = () => {
       setHistoryLoading(false);
       setDirectory([]);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, currDir, refreshThemeFromBackend, setDirectory]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -142,9 +140,7 @@ const Terminal = () => {
 
   useEffect(() => {
     setShowThemeName(true);
-    const timeout = setTimeout(() => {
-      setShowThemeName(false);
-    }, 1000);
+    const timeout = setTimeout(() => setShowThemeName(false), 1000);
     return () => clearTimeout(timeout);
   }, [theme]);
 
@@ -178,16 +174,14 @@ const Terminal = () => {
         style={{ overflowAnchor: "none" }}
         className={`flex flex-col w-full min-h-screen ${theme.text} bg-linear-to-b ${theme.bg} font-[Hack] text-[12px]`}
       >
-        {/* Header */}
         <Header
           showSidenav={showSidenav}
           setShowSidenav={setShowSidenav}
           theme={theme}
         />
 
-        {/* Sidenav */}
         <div
-          className={`w-100 h-full fixed right-0 transition-transform duration-400 ease-in-out z-0  ${showSidenav ? "opacity-100" : "translate-x-full"}`}
+          className={`w-100 h-full fixed right-0 transition-transform duration-400 ease-in-out z-0 ${showSidenav ? "opacity-100" : "translate-x-full"}`}
         >
           <Sidenav
             setShowSidenav={setShowSidenav}
@@ -196,7 +190,6 @@ const Terminal = () => {
           />
         </div>
 
-        {/* theme toast */}
         {showThemeName && (
           <div className="fixed w-full h-screen flex items-end justify-center">
             <div
@@ -208,12 +201,10 @@ const Terminal = () => {
         )}
 
         <div className="pl-2 pt-18">
-          {/* history */}
           <Suspense fallback={<h1>loading...</h1>}>
             <History history={history} theme={theme} />
           </Suspense>
 
-          {/* Input area */}
           <div className="flex w-full pl-1 font-[Hack]">
             <span className={`mr-1.5 ${theme.username}`}>
               {`${username}@termiRoom:~${directoryString()}$ `}

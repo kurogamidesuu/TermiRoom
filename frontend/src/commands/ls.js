@@ -1,127 +1,53 @@
+import { getChildren, getNode } from "../api/file";
+
 export default {
   description: {
-    desc: '',
-    format: ''
+    desc: "List directory contents",
+    format: "[path]",
   },
-  execute: async ({content, args}) => {
-    const targetPath = content.trim() || '.';
-    
+  execute: async ({ content }, { currDir }) => {
+    const targetPath = content.trim() || ".";
+
     try {
-      const result = await listDirectory(targetPath, args);
-      return result;
-    } catch(error) {
+      return await listDirectory(targetPath, currDir);
+    } catch (error) {
       return `ls: ${error.message}`;
     }
-  }
+  },
 };
 
-const listDirectory = async (path, args={}) => {
-  let targetDirectoryId;
+const listDirectory = async (path, currDir) => {
+  let targetId;
 
-  if(path === '.' || path === '') {
-    targetDirectoryId = await getCurrentDirectoryId();
-  } else if(path === '..') {
-    const currDirectoryId = await getCurrentDirectoryId();
-    const currDirectory = await getFileNodeById(currDirectoryId);
-
-    targetDirectoryId = currDirectory.parent;
-    if(!targetDirectoryId) {
+  if (path === "." || path === "") {
+    targetId = currDir;
+  } else if (path === "..") {
+    const curr = await getNode(currDir);
+    if (!curr?.parent) {
       return `ls: Cannot access parent of root directory.`;
     }
+    targetId = curr.parent;
   } else {
-    targetDirectoryId = await resolvePath(path);
+    targetId = path;
   }
 
-  if(!targetDirectoryId) {
+  if (!targetId) {
     return `ls: cannot access '${path}': No such file or directory.`;
   }
 
-  const targetDirectory = await getFileNodeById(targetDirectoryId);
-  if(!targetDirectory) {
+  const node = await getNode(targetId);
+  if (!node) {
     return `ls: cannot access '${path}': No such file or directory.`;
   }
 
-  if(targetDirectory.type === 'file') {
-    return showFileContent(targetDirectory, args);
+  if (node.type === "file") {
+    return node.content || "(empty file)";
   }
 
-  const children = await getDirectoryContent(targetDirectoryId);
+  const children = await getChildren(targetId);
+  if (!children || children.length === 0) return "empty directory!";
 
-  return await showFolderContents(children);
-}
-
-export const getCurrentDirectoryId = async () => {
-  try {
-    const res = await fetch('/api/file/curr', {
-      credentials: 'include'
-    });
-
-    if(res.ok) {
-      const data = await res.json();
-      return data.id;
-    }
-  } catch {
-    return null;
-  }
-}
-
-export const getFileNodeById = async (id) => {
-  try {
-    const res = await fetch(`/api/file/node/${id}`, {
-      credentials: 'include'
-    });
-
-    if(res.ok) {
-      const data = await res.json();
-      return data.node;
-    }
-  } catch {
-    return null;
-  }
-}
-
-const resolvePath = (path) => {
-  return path;
-}
-
-const showFileContent = (fileNode, args) => {
-  if(!args) args = {bruh: 'bruh'};
-  
-  return fileNode.content;
-}
-
-const getDirectoryContent = async (fileNode) => {
-  try {
-    const res = await fetch(`/api/file/node/${fileNode}/children`);
-
-    if(res.ok) {
-      const data = await res.json();
-      const children = data.children;
-
-      return children;
-    }
-    return [];
-  } catch {
-    return [];
-  }
-}
-
-const showFolderContents = async (children) => {
-  if(!children || children.length === 0) {
-    return 'empty directory!';
-  }
-
-  let output = '';
-  
-  for(const child of children) {
-    const node = await getFileNodeById(child);
-    if(node) {
-      if(node.type === 'file')
-        output += node.name + '\n';
-      else 
-        output += `/${node.name}\n`;
-    }
-  }
-
-  return output.trim();
-}
+  return children
+    .map((child) => (child.type === "folder" ? `/${child.name}` : child.name))
+    .join("\n");
+};
