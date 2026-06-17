@@ -5,32 +5,33 @@ function parseArgsAndFlags(tokens) {
   const flags = {};
   const cleanTokens = [];
 
-  for(const token of tokens) {
-    if(token.startsWith('--')) {
-      const [key, value] = token.slice(2).split('=');
+  for (const token of tokens) {
+    if (token.startsWith("--")) {
+      const [key, value] = token.slice(2).split("=");
       flags[key] = value ?? true;
-    } else if(token.startsWith('-')) {
+    } else if (token.startsWith("-")) {
       args[token.slice(1)] = true;
     } else {
       cleanTokens.push(token);
     }
   }
 
-  return {args, flags, cleanTokens};
+  return { args, flags, cleanTokens };
 }
 
 export async function executeCommand(input, helpers) {
-  if(!input) return;
+  if (!input) return;
   const rawTokens = input.split(/'([^']*)'|\s+/).filter(Boolean);
-  const {args, flags, cleanTokens} = parseArgsAndFlags(rawTokens);
+  const { args, flags, cleanTokens } = parseArgsAndFlags(rawTokens);
 
-  if(!commandTree[cleanTokens[0]]) return `Invalid Command: ${cleanTokens[0]} doesn't exist.`;
+  if (!commandTree[cleanTokens[0]])
+    return `Invalid Command: ${cleanTokens[0]} doesn't exist.`;
 
-  let node =  null;
+  let node = null;
   let currentTree = commandTree;
   let index = 0;
-  
-  while(index < cleanTokens.length && currentTree[cleanTokens[index]]) {
+
+  while (index < cleanTokens.length && currentTree[cleanTokens[index]]) {
     const token = cleanTokens[index];
     node = currentTree[token];
     currentTree = node.subcommands || {};
@@ -38,23 +39,33 @@ export async function executeCommand(input, helpers) {
   }
 
   const temp = cleanTokens.slice(index);
-  const content = temp.join(' ');
+  const content = temp.join(" ");
 
-  if(node?.args) {
-    const optionsLength = Number(Object.keys(args).length) + Number(Object.keys(flags).length);
-    if(optionsLength < node.args.min) {
+  if (node?.args) {
+    const optionsLength =
+      Number(Object.keys(args).length) + Number(Object.keys(flags).length);
+    const positionalArgsLength = content
+      ? content.trim().split(/\s+/).length
+      : 0;
+
+    const totalArgs = optionsLength + positionalArgsLength;
+
+    if (totalArgs < node.args.min) {
       return `Provide atleast ${node.args.min} argument(s).`;
     }
-    if(optionsLength > node.args.max) {
-      return `Too many arguments! Provide at most ${node.args.max} argument(s).`
+    if (totalArgs > node.args.max) {
+      return `Too many arguments! Provide at most ${node.args.max} argument(s).`;
     }
   }
-  
-  if(node?.execute) {
+
+  if (node?.execute) {
     try {
-      const result = await node.execute({args, flags, content, commandTree}, helpers);
+      const result = await node.execute(
+        { args, flags, content, commandTree },
+        helpers,
+      );
       return result;
-    } catch(e) {
+    } catch (e) {
       return `Error executing command: ${e.message}`;
     }
   } else {
