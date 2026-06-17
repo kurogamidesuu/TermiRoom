@@ -1,54 +1,45 @@
+import { apiClient } from "./client";
+
 const BASE = "/api/file";
 
 export const getPath = async (currDir) => {
-  const res = await fetch(`${BASE}/path?currDir=${currDir}`, {
-    credentials: "include",
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.pathArr;
+  try {
+    const data = await apiClient(`${BASE}/path?currDir=${currDir}`);
+    return data.pathArr;
+  } catch {
+    return [];
+  }
 };
 
 export const getNode = async (id) => {
-  const res = await fetch(`${BASE}/node/${id}`, { credentials: "include" });
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data.node;
+  try {
+    const data = await apiClient(`${BASE}/node/${id}`);
+    return data.node;
+  } catch {
+    return null;
+  }
 };
 
 export const getChildren = async (id) => {
-  const res = await fetch(`${BASE}/node/${id}/children`, {
-    credentials: "include",
-  });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.children;
+  try {
+    const data = await apiClient(`${BASE}/node/${id}/children`);
+    return data.children;
+  } catch {
+    return [];
+  }
 };
 
 export const createNode = async (name, type, currDir) => {
-  const res = await fetch(`${BASE}/create`, {
+  const data = await apiClient(`${BASE}/create`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ name, type, currDir }),
+    body: { name, type, currDir },
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to create node.");
   return data.node;
 };
 
-export const cd = async (dirArray, currDir) => {
-  const res = await fetch(`${BASE}/cd`, {
+export const cd = (dirArray, currDir) => {
+  return apiClient(`${BASE}/cd`, {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ dirArray, currDir }),
+    body: { dirArray, currDir },
   });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to change directory.");
-  return data; // { currDir: newId, pathArr }
 };

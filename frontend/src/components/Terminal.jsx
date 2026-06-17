@@ -105,15 +105,6 @@ const Terminal = () => {
     ];
 
     setHistory(newHistory);
-
-    try {
-      await setServerHistory(newHistory);
-    } catch (error) {
-      console.error(
-        "Failed to sync history to server. State saved locally. ",
-        error,
-      );
-    }
     setInput("");
   };
 
@@ -191,7 +182,7 @@ const Terminal = () => {
         />
 
         <div
-          className={`w-100 h-full fixed right-0 transition-transform duration-400 ease-in-out z-0 ${showSidenav ? "opacity-100" : "translate-x-full"}`}
+          className={`w-100 h-full fixed right-0 transition-transform duration-400 ease-in-out z-10 ${showSidenav ? "translate-x-0" : "translate-x-full"}`}
         >
           <Sidenav
             setShowSidenav={setShowSidenav}

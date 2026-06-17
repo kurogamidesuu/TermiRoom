@@ -1,37 +1,35 @@
+import { apiClient } from "./client";
+
 const BASE = "/api/util";
 
 export const getHistory = async () => {
-  const res = await fetch(`${BASE}/history`, { credentials: "include" });
-  if (!res.ok) return [];
-  const data = await res.json();
-  return data.history;
+  try {
+    const data = await apiClient(`${BASE}/history`);
+    return data.history;
+  } catch {
+    return [];
+  }
 };
 
 export const setHistory = async (history) => {
-  await fetch(`${BASE}/history`, {
+  return apiClient(`${BASE}/history`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ history }),
+    body: { history },
   });
 };
 
 export const getTheme = async () => {
-  const res = await fetch(`${BASE}/theme`, { credentials: "include" });
-  if (!res.ok) return 0;
-  const data = await res.json();
-  return data.themeIndex;
+  try {
+    const data = await apiClient(`${BASE}/theme`);
+    return data.themeIndex;
+  } catch {
+    return 0;
+  }
 };
 
 export const setTheme = async (themeIndex) => {
-  await fetch(`${BASE}/theme`, {
+  return apiClient(`${BASE}/theme`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({ themeIndex }),
+    body: { themeIndex },
   });
 };
