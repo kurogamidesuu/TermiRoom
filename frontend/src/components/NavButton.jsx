@@ -1,27 +1,26 @@
 import { setServerHistory } from "../utils/historyStore";
 
-const NavButton = ({name, theme, cycleTheme}) => {
-
+const NavButton = ({ name, theme, cycleTheme }) => {
   const handleReset = async () => {
     await setServerHistory([]);
     location.reload();
-  }
+  };
 
   const handleTheme = () => {
     cycleTheme();
-  }
+  };
 
   return (
-    <div 
-      className={`w-[90%] h-16 bg-linear-to-t ${theme.bg} rounded-lg hover:bg-black transition background duration:500 ease cursor-pointer ${theme.text}`}
+    <div
+      className={`w-[90%] h-12 bg-linear-to-b ${theme.bg} rounded-lg hover:bg-black transition background duration:500 ease cursor-pointer ${theme.text}`}
       onClick={() => {
-        if(name === 'Toggle theme') handleTheme();
-        else if(name === 'Reset terminal') handleReset();
+        if (name === "Toggle theme") handleTheme();
+        else if (name === "Reset terminal") handleReset();
       }}
     >
-      <div className='mt-6 ml-5 font-[Hack] text-md'>{name}</div>
+      <div className="mt-6 ml-5 font-[Hack] text-md">{name}</div>
     </div>
-  )
-}
+  );
+};
 
-export default NavButton
+export default NavButton;

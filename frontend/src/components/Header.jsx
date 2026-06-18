@@ -1,21 +1,23 @@
-
-const Header = ({showSidenav, setShowSidenav, theme}) => {
-  const handleSideNav = () => {
-    setShowSidenav(true)
-  }
+const Header = ({ showSidenav, setShowSidenav, theme }) => {
+  if (showSidenav) return null;
 
   return (
-    <div className={`h-15 w-full fixed py-3 mb-3 bg-linear-to-t from-transparent from-5% ${theme.header} to-95% flex justify-center items-center w-f`}>
-      <div 
-      className={`${showSidenav ? 'hidden' : ''} w-10 h-10 bg-linear-to-t ${theme.navBtn.bg} ml-auto mr-5 rounded-md cursor-pointer flex flex-col items-center justify-center gap-1.5`}
-      onClick={handleSideNav}
-      >
-        <span className={`w-8 h-1.5 rounded-md ${theme.navBtn.btn}`}></span>
-        <span className={`w-8 h-1.5 rounded-md ${theme.navBtn.btn}`}></span>
-        <span className={`w-8 h-1.5 rounded-md ${theme.navBtn.btn}`}></span>
-      </div>
-    </div>
-  )
-}
+    <button
+      className={`w-8 h-8 flex flex-col items-center justify-center gap-1.5 rounded-md cursor-pointer transition-colors hover:bg-white/10 ${theme.navBtn?.bg || ""}`}
+      onClick={() => setShowSidenav(true)}
+      aria-label="Open Menu"
+    >
+      <span
+        className={`w-5 h-[2px] rounded-full ${theme.navBtn?.btn || "bg-gray-400"}`}
+      ></span>
+      <span
+        className={`w-5 h-[2px] rounded-full ${theme.navBtn?.btn || "bg-gray-400"}`}
+      ></span>
+      <span
+        className={`w-5 h-[2px] rounded-full ${theme.navBtn?.btn || "bg-gray-400"}`}
+      ></span>
+    </button>
+  );
+};
 
-export default Header
+export default Header;

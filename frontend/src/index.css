@@ -1,26 +1,18 @@
 @import "tailwindcss";
 
-::-webkit-scrollbar {
-  width: 5px;
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
 }
 
-::-webkit-scrollbar-track {
-  background: linear-gradient(
-    #101020,
-    #101010
-  );
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-  background: oklch(35.9% 0.144 278.697);
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: oklch(25.7% 0.09 281.288);
-}
-
-::-webkit-scrollbar-button {
-  background: oklch(25.7% 0.09 281.288);
-  height: 10px;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }

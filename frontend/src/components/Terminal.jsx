@@ -44,6 +44,7 @@ const Terminal = () => {
   const { directory, setDirectory } = useDirectory();
 
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
 
   const handleLogout = async () => {
     try {
@@ -60,17 +61,14 @@ const Terminal = () => {
 
   const handleSubmit = async () => {
     const helpers = {
-      // theme
       setThemeByName,
       cycleTheme,
       listThemes,
       theme,
-      // directory
       directory,
       setDirectory,
       currDir,
       setCurrDir,
-      // user
       username,
       setUsername: (newName) => login(newName, currDir),
     };
@@ -108,10 +106,7 @@ const Terminal = () => {
     setInput("");
 
     setServerHistory(newHistory).catch((error) => {
-      console.error(
-        "Background history sync failed, but UI is unaffected.",
-        error,
-      );
+      console.error("Background history sync failed.", error);
     });
   };
 
@@ -120,6 +115,12 @@ const Terminal = () => {
       return "/";
     }
     return "/" + directory.join("/") + "/";
+  };
+
+  const handleTerminalClick = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
   };
 
   useEffect(() => {
@@ -154,8 +155,10 @@ const Terminal = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-green-400">Loading...</div>
+      <div className="flex items-center justify-center min-h-screen bg-[#111111]">
+        <div className="text-green-400 font-[Hack] text-sm">
+          Loading Environment...
+        </div>
       </div>
     );
   }
@@ -170,61 +173,92 @@ const Terminal = () => {
 
   if (historyLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-green-400">Loading terminal history...</div>
+      <div className="flex items-center justify-center min-h-screen bg-[#111111]">
+        <div className="text-green-400 font-[Hack] text-sm">
+          Restoring Session...
+        </div>
       </div>
     );
   }
 
   return (
-    <>
+    /* DESKTOP BACKGROUND */
+    <div
+      className={`flex items-center justify-center min-h-screen p-4 sm:p-8 bg-gradient-to-tl ${theme.bg}`}
+    >
+      <div className="absolute inset-0 bg-black/50 pointer-events-none" />
+      {/* THE APP WINDOW */}
       <div
-        style={{ overflowAnchor: "none" }}
-        className={`flex flex-col w-full min-h-screen ${theme.text} bg-linear-to-b ${theme.bg} font-[Hack] text-[12px]`}
+        onClick={handleTerminalClick}
+        className={`relative z-10 flex flex-col w-full max-w-4xl h-[75vh] min-h-[500px] rounded-lg shadow-2xl overflow-hidden border border-slate-300/15 bg-gradient-to-br ${theme.bg} ${theme.text} font-[Hack] text-xs cursor-text`}
       >
-        <Header
-          showSidenav={showSidenav}
-          setShowSidenav={setShowSidenav}
-          theme={theme}
-        />
-
-        <div
-          className={`w-100 h-full fixed right-0 transition-transform duration-400 ease-in-out z-10 ${showSidenav ? "translate-x-0" : "translate-x-full"}`}
-        >
-          <Sidenav
-            setShowSidenav={setShowSidenav}
-            theme={theme}
-            cycleTheme={cycleTheme}
-          />
-        </div>
-
-        {showThemeName && (
-          <div className="fixed w-full h-screen flex items-end justify-center">
-            <div
-              className={`mb-5 p-3 rounded-lg text-xl ${theme.text} bg-zinc-900/20`}
-            >
-              Theme: {theme.name}
-            </div>
+        {/* TOP BAR */}
+        <div className="relative flex-none flex items-center px-4 h-10 bg-black/25 border-b border-white/10 select-none z-30">
+          <div className="flex space-x-2">
+            <div className="w-3 h-3 rounded-full bg-[#ff5f56]/60"></div>
+            <div className="w-3 h-3 rounded-full bg-[#ffbd2e]/60"></div>
+            <div className="w-3 h-3 rounded-full bg-[#27c93f]/60"></div>
           </div>
-        )}
 
-        <div className="pl-2 pt-18">
-          <History history={history} theme={theme} />
+          <div className="absolute left-1/2 -translate-x-1/2 text-[11px] text-slate-200/70 font-sans tracking-wider font-semibold">
+            termiRoom
+          </div>
 
-          <div className="flex w-full pl-1 font-[Hack]">
-            <span className={`mr-1.5 ${theme.username}`}>
-              {`${username}@termiRoom:~${directoryString()}$ `}
-            </span>
-            <Input
-              input={input}
-              setInput={setInput}
-              handleSubmit={handleSubmit}
+          <div className="ml-auto flex items-center">
+            <Header
+              showSidenav={showSidenav}
+              setShowSidenav={setShowSidenav}
+              theme={theme}
             />
           </div>
-          <div ref={bottomRef} />
+        </div>
+
+        {/* TERMINAL BODY WRAPPER */}
+        <div className="relative flex-1 min-h-0 flex flex-col">
+          {/* SIDENAV */}
+          <div
+            className={`absolute top-0 right-0 h-full w-64 ${theme.sidenav} backdrop-blur-md border-l border-white/10 z-20 transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] ${
+              showSidenav
+                ? "translate-x-0 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]"
+                : "translate-x-full"
+            }`}
+          >
+            <Sidenav
+              setShowSidenav={setShowSidenav}
+              theme={theme}
+              cycleTheme={cycleTheme}
+            />
+          </div>
+
+          {/* THEME TOAST NOTIFICATION */}
+          {showThemeName && (
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+              <div className="px-4 py-1.5 rounded-md text-xs bg-black/80 text-white backdrop-blur-sm border border-white/10 shadow-lg">
+                {theme.name}
+              </div>
+            </div>
+          )}
+
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar overflow-hidden">
+            <History history={history} theme={theme} />
+
+            {/* INPUT LINE */}
+            <div className="flex items-start w-full mt-1 ml-1">
+              <span className={`mr-2 shrink-0 ${theme.username}`}>
+                {`${username}@termiRoom:~${directoryString()}$`}
+              </span>
+              <Input
+                input={input}
+                setInput={setInput}
+                handleSubmit={handleSubmit}
+                inputRef={inputRef}
+              />
+            </div>
+            <div ref={bottomRef} className="h-4" />
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 
