@@ -52,7 +52,7 @@ export default {
       },
       args: {
         min: 0,
-        max: 1,
+        max: 1000,
         description: {
           "--src=[source]":
             "Add a source to get the information from (e.g. wikipedia)",

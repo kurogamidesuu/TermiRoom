@@ -16,6 +16,7 @@ import { useDirectory } from "../context/DirectoryContext";
 import { logout as apiLogout } from "../api/auth";
 import { getPath } from "../api/file";
 import History from "./History";
+import commandTree from "../commands/parser/commandTree";
 
 const Terminal = () => {
   const [input, setInput] = useState("");
@@ -184,6 +185,7 @@ const Terminal = () => {
   const commandHistory = history
     .filter((item) => item.type === "input")
     .map((item) => item.command);
+  const validCommands = Object.keys(commandTree);
 
   return (
     /* DESKTOP BACKGROUND */
@@ -244,7 +246,11 @@ const Terminal = () => {
           )}
 
           <div className="flex-1 overflow-y-auto p-4 custom-scrollbar overflow-hidden">
-            <History history={history} theme={theme} />
+            <History
+              history={history}
+              theme={theme}
+              validCommands={validCommands}
+            />
 
             {/* INPUT LINE */}
             <div className="flex items-start w-full mt-1 ml-1">
@@ -257,6 +263,8 @@ const Terminal = () => {
                 handleSubmit={handleSubmit}
                 inputRef={inputRef}
                 commandHistory={commandHistory}
+                validCommands={validCommands}
+                theme={theme}
               />
             </div>
             <div ref={bottomRef} className="h-4" />

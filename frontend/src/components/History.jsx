@@ -1,32 +1,49 @@
 import { memo } from "react";
 
-const History = ({ history, theme }) => {
+const HighlightedCommand = ({ command, theme, validCommands = [] }) => {
+  const match = command.match(/^(\s*)([^\s]+)(.*)$/);
+  if (!match) return <span>{command}</span>;
+
+  const [, spaces, cmd, rest] = match;
+
+  const isValidCommand = validCommands.includes(cmd);
+  const colorClass = isValidCommand
+    ? theme?.command || theme?.username || "text-amber-300"
+    : "";
+
   return (
-    <div className="pl-1">
-      {history.map((entry, index) => {
-        if (entry.type === "input") {
-          return (
-            <pre
-              className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1"
-              key={index}
-            >
-              <span
-                className={theme.username}
-              >{`${entry.user}@termiRoom:~${entry.dirName}$ `}</span>
-              <span>{entry.command}</span>
-            </pre>
-          );
-        } else if (entry.type === "output") {
-          return (
-            <pre
-              className="font-[Hack] whitespace-pre-wrap break-words leading-relaxed mb-1"
-              key={index}
-            >
-              <span>{entry.text}</span>
-            </pre>
-          );
-        }
-      })}
+    <span>
+      {spaces}
+      <span className={colorClass}>{cmd}</span>
+      {rest}
+    </span>
+  );
+};
+
+const History = ({ history, theme, validCommands = [] }) => {
+  return (
+    <div className="flex flex-col">
+      {history.map((item, index) => (
+        <div key={index} className="mb-1 w-full">
+          {item.type === "input" ? (
+            <div className="flex items-start w-full">
+              <span className={`mr-2 shrink-0 ${theme.username}`}>
+                {`${item.user}@termiRoom:~${item.dirName}$`}
+              </span>
+
+              <HighlightedCommand
+                command={item.command}
+                theme={theme}
+                validCommands={validCommands}
+              />
+            </div>
+          ) : (
+            <div className="whitespace-pre-wrap break-all w-full mt-1">
+              {item.text}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 };
