@@ -17,6 +17,7 @@ import { logout as apiLogout } from "../api/auth";
 import { getPath } from "../api/file";
 import History from "./History";
 import commandTree from "../commands/parser/commandTree";
+import Spinner from "./Spinner";
 
 const Terminal = () => {
   const [input, setInput] = useState("");
@@ -25,6 +26,7 @@ const Terminal = () => {
   const [showSidenav, setShowSidenav] = useState(false);
   const [showThemeName, setShowThemeName] = useState(false);
   const [loginView, setLoginView] = useState(true);
+  const [isExecuting, setIsExecuting] = useState(false);
 
   const {
     isLoggedIn,
@@ -61,54 +63,74 @@ const Terminal = () => {
   };
 
   const handleSubmit = async () => {
-    const helpers = {
-      setThemeByName,
-      cycleTheme,
-      listThemes,
-      theme,
-      directory,
-      setDirectory,
-      currDir,
-      setCurrDir,
-      username,
-      setUsername: (newName) => login(newName, currDir),
+    if (!input.trim()) return;
+
+    const currentInput = input;
+    const inputEntry = {
+      type: "input",
+      user: username,
+      dirName: directoryString(),
+      command: currentInput,
     };
 
-    let parsedCmd = await executeCommand(input, helpers);
-    if (parsedCmd === null || parsedCmd === undefined) return;
-
-    if (parsedCmd === "__CLEAR__") {
-      setHistory([]);
-      await setServerHistory([]);
-      setInput("");
-      return;
-    }
-
-    if (parsedCmd === "__LOGOUT__") {
-      await handleLogout();
-      setInput("");
-      return;
-    }
-
-    const newHistory = [
-      ...history,
-      {
-        type: "input",
-        user: username,
-        dirName: directoryString(),
-        command: input,
-      },
-      ...(parsedCmd !== ""
-        ? [{ type: "output", text: String(parsedCmd) }]
-        : []),
-    ];
-
-    setHistory(newHistory);
+    setHistory((prev) => [...prev, inputEntry]);
     setInput("");
 
-    setServerHistory(newHistory).catch((error) => {
-      console.error("Background history sync failed.", error);
-    });
+    setIsExecuting(true);
+
+    try {
+      const helpers = {
+        setThemeByName,
+        cycleTheme,
+        listThemes,
+        theme,
+        directory,
+        setDirectory,
+        currDir,
+        setCurrDir,
+        username,
+        setUsername: (newName) => login(newName, currDir),
+      };
+
+      let parsedCmd = await executeCommand(currentInput, helpers);
+
+      if (parsedCmd === "__CLEAR__") {
+        setHistory([]);
+        await setServerHistory([]);
+        return;
+      }
+
+      if (parsedCmd === "__LOGOUT__") {
+        await handleLogout();
+        return;
+      }
+
+      setHistory((prev) => {
+        const nextHistory =
+          parsedCmd !== "" && parsedCmd !== undefined && parsedCmd !== null
+            ? [...prev, { type: "output", text: String(parsedCmd) }]
+            : [...prev];
+
+        setServerHistory(nextHistory).catch((err) =>
+          console.error("History sync failed", err),
+        );
+        return nextHistory;
+      });
+    } catch (error) {
+      setHistory((prev) => [
+        ...prev,
+        {
+          type: "output",
+          text: `Error: ${error.message || "Command execution failed"}`,
+        },
+      ]);
+    } finally {
+      setIsExecuting(false);
+
+      setTimeout(() => {
+        if (inputRef.current) inputRef.current.focus();
+      }, 0);
+    }
   };
 
   const directoryString = () => {
@@ -245,28 +267,32 @@ const Terminal = () => {
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar">
             <History
               history={history}
               theme={theme}
               validCommands={validCommands}
             />
 
-            {/* INPUT LINE */}
-            <div className="flex items-start w-full mt-1 ml-1">
-              <span className={`mr-2 shrink-0 ${theme.username}`}>
-                {`${username}@termiRoom:~${directoryString()}$`}
-              </span>
-              <Input
-                input={input}
-                setInput={setInput}
-                handleSubmit={handleSubmit}
-                inputRef={inputRef}
-                commandHistory={commandHistory}
-                validCommands={validCommands}
-                theme={theme}
-              />
-            </div>
+            {isExecuting && <Spinner theme={theme} />}
+
+            {!isExecuting && (
+              <div className="flex items-start w-full mt-1">
+                <span className={`mr-2 shrink-0 ${theme.username}`}>
+                  {`${username}@termiRoom:~${directoryString()}$`}
+                </span>
+                <Input
+                  input={input}
+                  setInput={setInput}
+                  handleSubmit={handleSubmit}
+                  inputRef={inputRef}
+                  commandHistory={commandHistory}
+                  validCommands={validCommands}
+                  theme={theme}
+                />
+              </div>
+            )}
+
             <div ref={bottomRef} className="h-4" />
           </div>
         </div>
