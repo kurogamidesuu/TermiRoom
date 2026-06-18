@@ -181,10 +181,14 @@ const Terminal = () => {
     );
   }
 
+  const commandHistory = history
+    .filter((item) => item.type === "input")
+    .map((item) => item.command);
+
   return (
     /* DESKTOP BACKGROUND */
     <div
-      className={`flex items-center justify-center min-h-screen p-4 sm:p-8 bg-gradient-to-tl ${theme.bg}`}
+      className={`flex flex-col items-center justify-center min-h-screen p-4 sm:p-8 bg-gradient-to-tl ${theme.bg}`}
     >
       <div className="absolute inset-0 bg-black/50 pointer-events-none" />
       {/* THE APP WINDOW */}
@@ -252,12 +256,23 @@ const Terminal = () => {
                 setInput={setInput}
                 handleSubmit={handleSubmit}
                 inputRef={inputRef}
+                commandHistory={commandHistory}
               />
             </div>
             <div ref={bottomRef} className="h-4" />
           </div>
         </div>
       </div>
+      <h2 className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white text-xs tracking-wide">
+        Made by{" "}
+        <a
+          href="https://github.com/kurogamidesuu"
+          className={`${theme.username} hover:underline`}
+          target="#"
+        >
+          Kurogami
+        </a>
+      </h2>
     </div>
   );
 };

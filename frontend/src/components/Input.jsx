@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
 
-const Input = ({ input, setInput, handleSubmit, inputRef }) => {
+const Input = ({
+  input,
+  setInput,
+  handleSubmit,
+  inputRef,
+  commandHistory = [],
+}) => {
   const [cursorPos, setCursorPos] = useState(0);
+  const [historyIndex, setHistoryIndex] = useState(-1);
+  const [tempInput, setTempInput] = useState("");
 
   useEffect(() => {
-    if (input.length === 0) setCursorPos(0);
-  }, [input]);
+    if (input.length === 0 && historyIndex === -1) {
+      setCursorPos(0);
+    }
+  }, [input, historyIndex]);
 
   const updateCursor = (e) => {
     setCursorPos(e.target.selectionStart || 0);
@@ -16,11 +26,59 @@ const Input = ({ input, setInput, handleSubmit, inputRef }) => {
     setCursorPos(e.target.selectionStart || 0);
   };
 
+  const setInputAndCursor = (newText) => {
+    setInput(newText);
+    setTimeout(() => {
+      setCursorPos(newText.length);
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(newText.length, newText.length);
+      }
+    }, 0);
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
+      setHistoryIndex(-1);
+      setTempInput("");
       handleSubmit();
       return;
     }
+
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (commandHistory.length === 0) return;
+
+      const newIndex = Math.min(historyIndex + 1, commandHistory.length - 1);
+      if (newIndex === historyIndex) return;
+
+      if (historyIndex === -1) {
+        setTempInput(input);
+      }
+
+      setHistoryIndex(newIndex);
+      const historicalCommand =
+        commandHistory[commandHistory.length - 1 - newIndex];
+      setInputAndCursor(historicalCommand);
+      return;
+    }
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (historyIndex === -1) return;
+
+      const newIndex = historyIndex - 1;
+      setHistoryIndex(newIndex);
+
+      if (newIndex === -1) {
+        setInputAndCursor(tempInput);
+      } else {
+        const historicalCommand =
+          commandHistory[commandHistory.length - 1 - newIndex];
+        setInputAndCursor(historicalCommand);
+      }
+      return;
+    }
+
     setTimeout(() => {
       if (inputRef.current) {
         setCursorPos(inputRef.current.selectionStart || 0);
@@ -54,9 +112,11 @@ const Input = ({ input, setInput, handleSubmit, inputRef }) => {
 
       <div className="w-full pointer-events-none">
         <span className="whitespace-pre-wrap break-all">{before}</span>
-        <span className="inline-block bg-current animate-pulse align-text-center">
+
+        <span className="inline-block bg-current align-text-bottom">
           <span className="text-black">{charUnderCursor}</span>
         </span>
+
         <span className="whitespace-pre-wrap break-all">{after}</span>
       </div>
     </div>
